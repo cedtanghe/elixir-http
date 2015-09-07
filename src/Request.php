@@ -75,7 +75,9 @@ class Request implements RequestInterface
         }
         
         $this->body = ($body instanceof StreamInterface) ? $body : new Stream();
-        $this->headers = [];
+        
+        // Todo prepare headers
+        $this->headers = $headers;
     }
     
     /**
@@ -364,6 +366,6 @@ class Request implements RequestInterface
      */
     protected function isValidBody(StreamInterface $body)
     {
-        return true
+        return true;
     }
 }
