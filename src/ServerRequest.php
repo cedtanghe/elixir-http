@@ -11,38 +11,8 @@ use Psr\Http\Message\UploadedFileInterface;
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
 
-class Request extends Request implements ServerRequestInterface
+class ServerRequest extends Request implements ServerRequestInterface
 {
-    /**
-     * @var string
-     */
-    const SERVER = 'server';
-    
-    /**
-     * @var string
-     */
-    const COOKIE = 'cookie';
-    
-    /**
-     * @var string
-     */
-    const QUERY = 'query';
-    
-    /**
-     * @var string
-     */
-    const UPLOADED_FILES = 'uploaded_files';
-    
-    /**
-     * @var string
-     */
-    const PARSED_BODY = 'parsed_body';
-    
-    /**
-     * @var string
-     */
-    const ATTRIBUTES = 'attributes';
-    
     /**
      * @var array
      */
@@ -74,39 +44,61 @@ class Request extends Request implements ServerRequestInterface
     protected $attributes = [];
     
     /**
-     * @param mixed $key
-     * @param mixed $default
-     * @param array $providers
-     * @return mixed
+     * @param string|UriInterface|null $URI
+     * @param array $config
+     * @throws \InvalidArgumentException
      */
-    public function get($key, $default = null, array $providers = [self::ATTRIBUTES, self::QUERY, self::PARSED_BODY])
+    public function __construct($URI = null, array $config = [])
     {
-        $noResult = '__no_result__';
-        $method = [
-            self::ATTRIBUTES => 'getAttribute',
-            self::COOKIE => 'getCookieParam',
-            self::PARSED_BODY => 'getPostParam',
-            self::QUERY => 'getQueryParam',
-            self::SERVER => 'getServerParam',
-            self::UPLOADED_FILES => 'getUploadedFile'
-        ];
+        $config += ['body' => 'php://input'];
         
-        foreach ($providers as $provider)
+        parent::__construct($URI, $config);
+        
+        // Server params
+        if (!empty($config['server_params']))
         {
-            $m = isset($method[$provider]) ? $method[$provider] : null;
-            
-            if ($m)
-            {
-                $result = $this->$m($key, $noResult);
-
-                if ($result !== $noResult)
-                {
-                    return $result;
-                }
-            }
+            $this->serverParams = (array)$config['server_params'];
         }
         
-        return is_callable($default) ? call_user_func($default) : $default;
+        // Cookie params
+        if (!empty($config['cookie_params']))
+        {
+            $this->cookieParams = (array)$config['cookie_params'];
+        }
+        
+        // Query params
+        if (!empty($config['query_params']))
+        {
+            $this->queryParams = (array)$config['query_params'];
+        }
+        
+        // Uploaded files
+        if (!empty($config['uploaded_files']))
+        {
+            if (!$this->isValidUploadedFiles($config['uploaded_files']))
+            {
+                throw new \InvalidArgumentException('Invalid structure is provided in uploaded files.');
+            }
+
+            $this->uploadedFiles = $config['uploaded_files'];
+        }
+        
+        // Parsed body
+        if (isset($config['parsed_body']))
+        {
+            if (!$this->isValidParsedBody($config['parsed_body']))
+            {
+                throw new \InvalidArgumentException('Unsupported argument type is provided for parsed body.');
+            }
+            
+            $this->parsedBody = $config['parsed_body'];
+        }
+        
+        // Attributes
+        if (!empty($config['attributes']))
+        {
+            $this->attributes = (array)$config['attributes'];
+        }
     }
     
     /**
@@ -243,6 +235,11 @@ class Request extends Request implements ServerRequestInterface
      */
     public function withUploadedFiles(array $uploadedFiles)
     {
+        if (!$this->isValidUploadedFiles($uploadedFiles))
+        {
+            throw new \InvalidArgumentException('Invalid structure is provided in uploaded files.');
+        }
+        
         $new = clone $this;
         $new->uploadedFiles = $uploadedFiles;
         
@@ -281,6 +278,11 @@ class Request extends Request implements ServerRequestInterface
      */
     public function withParsedBody($data)
     {
+        if (!$this->isValidParsedBody($data))
+        {
+            throw new \InvalidArgumentException('Unsupported argument type is  provided for parsed body.');
+        }
+        
         $new = clone $this;
         $new->parsedBody = $data;
         
@@ -338,5 +340,37 @@ class Request extends Request implements ServerRequestInterface
         ArrayUtils::remove($key, $this->attributes);
         
         return $new;
+    }
+    
+    /**
+     * @param array $uploadedFiles
+     * @return boolean
+     */
+    public function isValidUploadedFiles(array $uploadedFiles)
+    {
+        foreach ($uploadedFiles as $file) 
+        {
+            if (is_array($file)) 
+            {
+                $this->isValidUploadedFiles($file);
+                continue;
+            }
+            
+            if (!$file instanceof UploadedFileInterface)
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * @param null|array|object $data
+     * @return boolean
+     */
+    public function isValidParsedBody($data)
+    {
+        return true;
     }
 }

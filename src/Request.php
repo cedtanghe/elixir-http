@@ -2,7 +2,8 @@
 
 namespace Elixir\HTTP;
 
-use Elixir\HTTP\Stream;
+use Elixir\HTTP\MessageTrait;
+use Elixir\HTTP\StreamFactory;
 use Elixir\HTTP\URI;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -14,6 +15,8 @@ use Psr\Http\Message\UriInterface;
 
 class Request implements RequestInterface
 {
+    use MessageTrait;
+    
     /**
      * @var UriInterface;
      */
@@ -22,17 +25,7 @@ class Request implements RequestInterface
     /**
      * @var string 
      */
-    protected $method;
-    
-    /**
-     * @var StreamInterface 
-     */
-    protected $body;
-    
-    /**
-     * @var array
-     */
-    protected $headers = [];
+    protected $method = '';
     
     /**
      * @var string
@@ -40,44 +33,66 @@ class Request implements RequestInterface
     protected $requestTarget;
     
     /**
-     * @var string
-     */
-    protected $protocol = '1.1';
-
-    /**
-     * @param string|URI|null $URI
-     * @param string|null $method
-     * @param string|resource|StreamInterface $body
-     * @param array $headers
+     * @param string|UriInterface|null $URI
+     * @param array $config
      * @throws \InvalidArgumentException
      */
-    public function __construct($URI = null, $method = null, $body = 'php://temp', array $headers = [])
+    public function __construct($URI = null, array $config = [])
     {
-        if (is_string($uri)) 
+        $config += ['body' => 'php://temp'];
+        
+        // URI
+        if (is_string($URI))
         {
-            $uri = new URI($uri);
+            $URI = new URI($URI);
         }
         
-        $this->uri = $uri ?: new URI();
+        $this->URI = $URI ?: new URI();
         
-        if($method)
+        // Method
+        if (!empty($config['method']))
         {
-            if (!$this->isValidMethod($method))
+            if (!$this->isValidMethod($config['method']))
             {
-                throw new \InvalidArgumentException('Unsupported HTTP method');
+                throw new \InvalidArgumentException('Unsupported HTTP method.');
+            }
+
+            $this->method = $config['method'];
+        }
+        
+        // Body
+        $this->body = ($config['body'] instanceof StreamInterface) ? $config['body'] : StreamFactory::create($config['body']);
+        
+        // Header
+        if (!empty($config['headers']))
+        {
+            $config['headers'] = (array)$config['headers'];
+            
+            foreach ($config['headers'] as $header => $values)
+            {
+                foreach ($values as $value)
+                {
+                    if (!$this->isValidHeaderValue($value))
+                    {
+                        throw new \InvalidArgumentException(sprintf('Invalid header value for "%s".', $header));
+                    }
+                }
             }
             
-            $this->method = $method;
+            $this->headers = $config['headers'];
         }
-        else
+        
+        // Protocol
+        if (!empty($config['protocol_version']))
         {
-            $this->method = 'GET';
+            $this->protocol = $config['protocol_version'];
         }
         
-        $this->body = ($body instanceof StreamInterface) ? $body : new Stream();
-        
-        // Todo prepare headers
-        $this->headers = $headers;
+        // Request target
+        if (!isset($config['request_target']))
+        {
+            $this->requestTarget = $config['request_target'];
+        }
     }
     
     /**
@@ -127,7 +142,7 @@ class Request implements RequestInterface
     {
         if (!$this->isValidMethod($method))
         {
-            throw new \InvalidArgumentException('Unsupported HTTP method');
+            throw new \InvalidArgumentException('Unsupported HTTP method.');
         }
         
         $new = clone $this;
@@ -171,201 +186,11 @@ class Request implements RequestInterface
     }
     
     /**
-     * {@inheritdoc}
-     */
-    public function getProtocolVersion()
-    {
-        return $this->protocol;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function withProtocolVersion($version)
-    {
-        $new = clone $this;
-        $new->protocol = $version;
-        
-        return $new;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function hasHeader($name)
-    {
-        return array_key_exists(
-            strtolower($name), 
-            array_map(
-                function($header)
-                {
-                    return strtolower($header);
-                },
-                array_keys($this->headers)
-            )
-        );
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getHeader($name)
-    {
-        foreach ($this->headers as $key => $value)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
-                return (array)$value;
-            }
-        }
-        
-        return [];
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getHeaderLine($name)
-    {
-        return implode(',', $this->getHeader($name));
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function withHeader($name, $value)
-    {
-        if (!$this->isValidHeaderValue($value))
-        {
-            throw new \InvalidArgumentException('Invalid header value');
-        }
-        
-        $new = clone $this;
-        
-        foreach ($new->headers as $key => $value)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
-                unset($new->headers[$key]);
-                break;
-            }
-        }
-        
-        $new->headers[$name] = (array)$value;
-        
-        return $new;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function withAddedHeader($name, $value)
-    {
-        if (!$this->isValidHeaderValue($value))
-        {
-            throw new \InvalidArgumentException('Invalid header value');
-        }
-        
-        $new = clone $this;
-        
-        if (isset($new->headers[$name]) && false !== array_search($value, $new->headers[$name]))
-        {
-            return $new;
-        }
-        
-        $new->headers[$name][] = $value;
-        
-        return $new;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function withoutHeader($name)
-    {
-        $new = clone $this;
-        
-        foreach ($new->headers as $key => $value)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
-                unset($new->headers[$key]);
-                break;
-            }
-        }
-        
-        return $new;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function withBody(StreamInterface $body)
-    {
-        if (!$this->isValidBody($body))
-        {
-            throw new \InvalidArgumentException('Invalid stream');
-        }
-        
-        $new = clone $this;
-        $new->body = $body;
-        
-        return $new;
-    }
-    
-    /**
      * @param string $method
      * @return boolean
      */
-    protected function isValidMethod($method)
+    public function isValidMethod($method)
     {
         return in_array($method, ['HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE']);
-    }
-    
-    /**
-     * @param string $value
-     * @return boolean
-     */
-    protected function isValidHeaderValue($value)
-    {
-        if (is_array($value))
-        {
-            foreach ($value as $v)
-            {
-                if (!is_string($v))
-                {
-                    return false;
-                }
-            }
-            
-            return true;
-        }
-        
-        return is_string($value);
-    }
-    
-    /**
-     * @param StreamInterface $body
-     * @return boolean
-     */
-    protected function isValidBody(StreamInterface $body)
-    {
-        return true;
     }
 }
