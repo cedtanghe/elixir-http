@@ -72,6 +72,11 @@ class ServerRequest extends Request implements ServerRequestInterface
             $this->queryParams = (array)$config['query_params'];
         }
         
+        if (!empty($this->URI->getQuery()))
+        {
+            parse_str($this->URI->getQuery(), $this->queryParams);
+        }
+        
         // Uploaded files
         if (!empty($config['uploaded_files']))
         {

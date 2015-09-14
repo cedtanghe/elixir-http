@@ -26,5 +26,7 @@
         }
     },
     "suggest": {
+        "elixir/elixir-validator": "~1.0",
+        "elixir/elixir-filter": "~1.0"
     }
 }
