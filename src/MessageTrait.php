@@ -4,7 +4,6 @@ namespace Elixir\HTTP;
 
 use Psr\Http\Message\StreamInterface;
 
-
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */

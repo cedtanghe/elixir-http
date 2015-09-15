@@ -2,8 +2,9 @@
 
 namespace Elixir\HTTP;
 
-use Psr\Http\Message\UploadedFileInterface;
+use Elixir\HTTP\UploadControlsTrait;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
@@ -11,6 +12,8 @@ use Psr\Http\Message\StreamInterface;
 
 class UploadedFile implements UploadedFileInterface
 {
+    use UploadControlsTrait;
+    
     /**
      * @param array $file
      * @return array|UploadedFileInterface
@@ -78,6 +81,11 @@ class UploadedFile implements UploadedFileInterface
      * @var boolean 
      */
     protected $moved = false;
+    
+    /**
+     * @var string 
+     */
+    protected $targetPath = null;
 
     /**
      * @param string|resource|StreamInterface $streamOrFile
@@ -115,7 +123,7 @@ class UploadedFile implements UploadedFileInterface
         $this->clientFilename = $clientFilename;
         $this->clientMediaType = $clientMediaType;
     }
-
+    
     /**
      * {@inheritdoc}
      */
@@ -128,7 +136,7 @@ class UploadedFile implements UploadedFileInterface
         
         if ($this->moved)
         {
-            throw new RuntimeException('Cannot retrieve stream after it has already been moved.');
+            throw new \RuntimeException('Cannot retrieve stream after it has already been moved.');
         }
         
         $this->stream = ($this->stream instanceof StreamInterface) ? $this->stream : StreamFactory::create($this->file);
@@ -150,12 +158,35 @@ class UploadedFile implements UploadedFileInterface
     {
         return $this->moved;
     }
+    
+    /**
+     * @return string
+     */
+    public function getTargetPath()
+    {
+        return $this->targetPath;
+    }
+    
+    /**
+     * @param string $value
+     */
+    public function setTargetPath($value)
+    {
+        $this->targetPath = $value;
+    }
 
     /**
      * {@inheritdoc}
      */
     public function moveTo($targetPath)
     {
+        $targetPath = $targetPath ?: $this->targetPath;
+        
+        if (!$targetPath)
+        {
+            throw new \InvalidArgumentException('Path file is invalid.');
+        }
+        
         if ($this->error !== UPLOAD_ERR_OK)
         {
             throw new \RuntimeException('Cannot move file due to upload error.');

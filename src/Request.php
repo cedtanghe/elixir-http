@@ -66,8 +66,6 @@ class Request implements RequestInterface
         // Header
         if (!empty($config['headers']))
         {
-            $config['headers'] = (array)$config['headers'];
-            
             foreach ($config['headers'] as $header => $values)
             {
                 foreach ($values as $value)
