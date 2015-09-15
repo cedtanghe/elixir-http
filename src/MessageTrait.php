@@ -2,6 +2,7 @@
 
 namespace Elixir\HTTP;
 
+use Elixir\HTTP\Cookie;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -19,6 +20,11 @@ trait MessageTrait
      * @var array
      */
     protected $headers = [];
+    
+    /**
+     * @var array 
+     */
+    protected $cookies = [];
     
     /**
      * @var string
@@ -44,7 +50,7 @@ trait MessageTrait
         return $new;
     }
     
-     /**
+    /**
      * {@inheritdoc}
      */
     public function getHeaders()
@@ -94,6 +100,29 @@ trait MessageTrait
     }
     
     /**
+     * @param Cookie|array $cookie
+     * @return self
+     */
+    public function withCookies($cookie)
+    {
+        $lines = [];
+        
+        if (is_array($cookie))
+        {
+            foreach ($cookie as $c)
+            {
+                $lines = array_merge($lines, (array)$cookie->formatToString());
+            }
+        }
+        else
+        {
+            $lines = $cookie->formatToString();
+        }
+        
+        return $this->withHeader('Set-Cookie', $lines);
+    }
+    
+    /**
      * {@inheritdoc}
      */
     public function withHeader($name, $value)
@@ -110,13 +139,47 @@ trait MessageTrait
             if (strtolower($key) == strtolower($name))
             {
                 unset($new->headers[$key]);
-                break;
             }
         }
         
         $new->headers[$name] = (array)$value;
         
+        if (strtolower($name)== 'set-cookie')
+        {
+            $cookies = [];
+            
+            foreach((array)$value as $cookie)
+            {
+                $cookies[] = Cookie::fromString($cookie);
+            }
+            
+            $new->cookies = $cookies;
+        }
+        
         return $new;
+    }
+    
+    /**
+     * @param Cookie|array $cookie
+     * @return self
+     */
+    public function withAddedCookie($cookie)
+    {
+        $lines = [];
+        
+        if (is_array($cookie))
+        {
+            foreach ($cookie as $c)
+            {
+                $lines = array_merge($lines, (array)$cookie->formatToString());
+            }
+        }
+        else
+        {
+            $lines = $cookie->formatToString();
+        }
+        
+        return $this->withAddedHeader('Set-Cookie', $lines);
     }
     
     /**
@@ -130,10 +193,25 @@ trait MessageTrait
         }
         
         $new = clone $this;
+        $headers = [];
         
-        if (!isset($new->headers[$name]) || false === array_search($value, $new->headers[$name]))
+        foreach ($new->headers as $key => $value)
         {
-            $new->headers[$name][] = $value;
+            if (strtolower($key) == strtolower($name))
+            {
+                $headers = array_merge($headers, $new->headers[$key]);
+                unset($new->headers[$key]);
+            }
+        }
+        
+        $new->headers[$name] = array_merge($headers, (array)$value);
+        
+        if (strtolower($name)== 'set-cookie')
+        {
+            foreach((array)$value as $cookie)
+            {
+                $new->cookies[] = Cookie::fromString($cookie);
+            }
         }
         
         return $new;
@@ -155,7 +233,99 @@ trait MessageTrait
             }
         }
         
+        if (strtolower($name) == 'set-cookie')
+        {
+            $this->cookies = [];
+        }
+        
         return $new;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getCookies()
+    {
+        return $this->cookies;
+    }
+    
+    /**
+     * @return array
+     */
+    protected function parseCacheControl()
+    {
+        if (!$this->hasHeader('Cache-Control') && !$this->hasHeader('Etag') && !$this->hasHeader('Last-Modified') && !$this->hasHeader('Expires'))
+        {
+            return ['no-cache'];
+        }
+        else if (!$this->hasHeader('Cache-Control'))
+        {
+            return ['private, must-revalidate'];
+        }
+        
+        $cacheControl = [];
+
+        foreach ($this->headers as $key => $value)
+        {
+            if (strtolower($key) == 'cache-control')
+            {
+                $cacheControl = $this->headers[$key];
+                break;
+            }
+        }
+
+        ksort($cacheControl);
+        $private = true;
+
+        foreach ($cacheControl as $value)
+        {
+            if (false !== strpos($value, 'public') || false !== strpos($value, 'private') || false !== strpos($value, 's-maxage'))
+            {
+                $private = false;
+                break;
+            }
+        }
+
+        $line = implode(', ', $cacheControl);
+
+        if ($private)
+        {
+            $line .= ', private';
+        }
+
+        return [$line];
+    }
+    
+    /**
+     * @return array
+     */
+    public function getSortedHeaders()
+    {
+        $this->headers['Cache-Control'] = $this->parseCacheControl();
+        unset($this->headers['cache-control']);
+        
+        $headers = array_slice($this->headers, 0);
+        $headers['Cache-Control'] = $this->parseCacheControl();
+        ksort($headers);
+        
+        $sorted = [];
+        
+        foreach($headers as $key => $values)
+        {
+            if(preg_match('/^HTTP\/1\.(0|1) \d{3}.*$/', $key))
+            {
+                array_unshift($sorted, $key);
+            }
+            else
+            {
+                foreach($values as $value)
+                {
+                    $headers[] = sprintf('%s : %s', $key, $value);
+                }
+            }
+        }
+        
+        return $headers;
     }
     
     /**

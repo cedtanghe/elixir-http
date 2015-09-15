@@ -22,7 +22,7 @@ trait UploadControlsTrait
     {
         return [
             'file_not_uploaded' => $this->messageCatalogue->translate('The file is not uploaded.'),
-            'upload_error' => $this->messageCatalogue->translate('The uploaded file is invalid.')
+            'upload_error' => $this->messageCatalogue->translate('An error occurred during upload.')
         ];
     }
     
