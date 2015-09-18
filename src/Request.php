@@ -81,9 +81,9 @@ class Request implements RequestInterface
         }
         
         // Protocol
-        if (!empty($config['protocol_version']))
+        if (!empty($config['protocol']))
         {
-            $this->protocol = $config['protocol_version'];
+            $this->protocol = $config['protocol'];
         }
         
         // Request target

@@ -56,21 +56,21 @@ class ServerRequest extends Request implements ServerRequestInterface
         parent::__construct($URI, $config);
         
         // Server params
-        if (!empty($config['server_params']))
+        if (!empty($config['server']))
         {
-            $this->serverParams = (array)$config['server_params'];
+            $this->serverParams = (array)$config['server'];
         }
         
         // Cookie params
-        if (!empty($config['cookie_params']))
+        if (!empty($config['cookie']))
         {
-            $this->cookieParams = (array)$config['cookie_params'];
+            $this->cookieParams = (array)$config['cookie'];
         }
         
         // Query params
-        if (!empty($config['query_params']))
+        if (!empty($config['query']))
         {
-            $this->queryParams = (array)$config['query_params'];
+            $this->queryParams = (array)$config['query'];
         }
         
         if (!empty($this->URI->getQuery()))
@@ -79,14 +79,14 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         
         // Uploaded files
-        if (!empty($config['uploaded_files']))
+        if (!empty($config['files']))
         {
-            if (!$this->isValidUploadedFiles($config['uploaded_files']))
+            if (!$this->isValidUploadedFiles($config['files']))
             {
                 throw new \InvalidArgumentException('Invalid structure is provided in uploaded files.');
             }
 
-            $this->uploadedFiles = $config['uploaded_files'];
+            $this->uploadedFiles = $config['files'];
         }
         
         // Parsed body

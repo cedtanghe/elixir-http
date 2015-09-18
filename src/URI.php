@@ -11,10 +11,29 @@ use Psr\Http\Message\UriInterface;
 class URI implements UriInterface
 {
     /**
+     * @param array $server
+     * @param array $headers
+     * @return static
+     */
+    public static function createFromServer(array $server, array $headers)
+    {
+        // Todo
+    }
+    
+    /**
+     * @param array $parts
+     * @return static
+     */
+    public static function createFromParts(array $parts = [])
+    {
+        return new URI(static::buildURIString($parts));
+    }
+
+    /**
      * @param array $parts
      * @return string
      */
-    public static function buildURI(array $parts = [])
+    public static function buildURIString(array $parts = [])
     {
         $URI = '';
         
@@ -191,7 +210,7 @@ class URI implements UriInterface
             return $this->URI;
         }
         
-        $this->URI = static::buildURI([
+        $this->URI = static::buildURIString([
             'scheme' => $this->scheme,
             'authority' => $this->getAuthority(),
             'path' => $this->path,

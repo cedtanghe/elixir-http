@@ -2,18 +2,53 @@
 
 namespace Elixir\HTTP;
 
+use Elixir\HTTP\ServerRequest;
+use Elixir\HTTP\UploadedFile;
+
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
 
 class ServerRequestFactory
 {
-    
-    public static function create()
+    /**
+     * @param array $server
+     * @param array $query
+     * @param array $body
+     * @param array $cookie
+     * @param array $files
+     * 
+     * @return ServerRequest;
+     */
+    public static function createFromGlobals(array $server = null, 
+                                             array $query = null,
+                                             array $body = null,
+                                             array $cookie = null,
+                                             array $files = null)
     {
-        // Todo
+        $server = $server ?: $_SERVER;
+        $query = $query ?: $_GET;
+        $body = $body ?: $_POST;
+        $cookie = $cookie ?: $_COOKIE;
+        $files = UploadedFile::create($files ?: $_FILES);
+        $headers = static::apacheRequestHeaders($server);
+        $URI = URI::createFromServer($server, $headers);
+        
+        return new ServerRequest(
+            $URI, 
+            [
+                'server' => $server,
+                'query' => $query,
+                'parsed_body' => $body,
+                'cookie' => $cookie,
+                'files' => $files,
+                'headers' => $headers,
+                'method' => isset($server['_method']) ? $server['_method'] : (isset($server['REQUEST_METHOD']) ? $server['REQUEST_METHOD'] : 'GET'),
+                'body' => 'php://input'
+            ]
+        );
     }
-
+    
     /**
      * @param array $serverDataFailback
      * @return array
