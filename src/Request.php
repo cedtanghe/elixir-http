@@ -150,6 +150,70 @@ class Request implements RequestInterface
     }
     
     /**
+     * @return boolean 
+     */
+    public function isHead()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isQuery()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isPost()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isPut()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isDelete()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isConnect()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isOptions()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isTrace()
+    {
+        // Todo
+    }
+    
+    /**
      * {@inheritdoc}
      */
     public function getUri()

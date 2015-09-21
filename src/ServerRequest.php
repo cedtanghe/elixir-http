@@ -349,6 +349,53 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
     
     /**
+     * @return boolean 
+     */
+    public function isSecure()
+    {
+        $HTTPS = $this->getServerParam('HTTPS');
+        
+        if ($HTTPS && $HTTPS !== 'off')
+        {
+            return true;
+        }
+        
+        return $this->getServerParam('HTTP_X_FORWARDED_PROTO') === 'https';
+    }
+    
+    /**
+     * @return string
+     */
+    public function getIP()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isAjax()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return string|null 
+     */
+    public function getUser()
+    {
+        // Todo
+    }
+    
+    /**
+     * @return string|null 
+     */
+    public function getPassword()
+    {
+        // Todo
+    }
+    
+    /**
      * @param array $uploadedFiles
      * @return boolean
      */
