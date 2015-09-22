@@ -25,7 +25,7 @@ class Request implements RequestInterface
     /**
      * @var string 
      */
-    protected $method = '';
+    protected $method = 'GET';
     
     /**
      * @var string
@@ -154,7 +154,15 @@ class Request implements RequestInterface
      */
     public function isHead()
     {
-        // Todo
+        return $this->getMethod() === 'HEAD';
+    }
+    
+    /**
+     * @return boolean 
+     */
+    public function isGet()
+    {
+        return $this->getMethod() === 'GET';
     }
     
     /**
@@ -162,7 +170,8 @@ class Request implements RequestInterface
      */
     public function isQuery()
     {
-        // Todo
+        $method = $this->getMethod();
+        return $method === 'GET' || $method === 'HEAD';
     }
     
     /**
@@ -170,7 +179,7 @@ class Request implements RequestInterface
      */
     public function isPost()
     {
-        // Todo
+        return $this->getMethod() === 'POST';
     }
     
     /**
@@ -178,7 +187,7 @@ class Request implements RequestInterface
      */
     public function isPut()
     {
-        // Todo
+        return $this->getMethod() === 'PUT';
     }
     
     /**
@@ -186,7 +195,7 @@ class Request implements RequestInterface
      */
     public function isDelete()
     {
-        // Todo
+        return $this->getMethod() === 'DELETE';
     }
     
     /**
@@ -194,7 +203,7 @@ class Request implements RequestInterface
      */
     public function isConnect()
     {
-        // Todo
+        return $this->getMethod() === 'CONNECT';
     }
     
     /**
@@ -202,7 +211,7 @@ class Request implements RequestInterface
      */
     public function isOptions()
     {
-        // Todo
+        return $this->getMethod() === 'OPTIONS';
     }
     
     /**
@@ -210,7 +219,7 @@ class Request implements RequestInterface
      */
     public function isTrace()
     {
-        // Todo
+        return $this->getMethod() === 'TRACE';
     }
     
     /**

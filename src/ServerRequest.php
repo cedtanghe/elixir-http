@@ -364,11 +364,48 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
     
     /**
-     * @return string
+     * @return string|null
      */
     public function getIP()
     {
-        // Todo
+        $validateIP = function($ip)
+        {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) 
+            {
+                return false;
+            }
+            
+            return true;
+        };
+        
+        $keys = [
+            'HTTP_CLIENT_IP',
+            'HTTP_X_FORWARDED_FOR', 
+            'HTTP_X_FORWARDED', 
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED'
+        ];
+        
+        foreach ($keys as $key) 
+        {
+            $value = $this->getServerParam($key);
+            
+            if (null !== $value) 
+            {
+                foreach (explode(',', $value) as $ip)
+                {
+                    $ip = trim($ip);
+                    
+                    if ($validateIP($ip))
+                    {
+                        return $ip;
+                    }
+                }
+            }
+        }
+        
+        return $this->getServerParam('REMOTE_ADDR');
     }
     
     /**
@@ -376,7 +413,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function isAjax()
     {
-        // Todo
+        return strtoupper($this->getServerParam('HTTP_X_REQUESTED_WITH', '')) === 'XMLHTTPREQUEST';
     }
     
     /**
@@ -384,7 +421,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getUser()
     {
-        // Todo
+        return $this->getServerParam('PHP_AUTH_USER');
     }
     
     /**
@@ -392,7 +429,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getPassword()
     {
-        // Todo
+        return $this->getServerParam('PHP_AUTH_PW');
     }
     
     /**
