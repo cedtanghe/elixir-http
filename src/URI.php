@@ -30,52 +30,11 @@ class URI implements UriInterface
         {
             $URI = 'http://';
         }
-
+        
         $URI .= ArrayUtils::get('HTTP_HOST', $server, '');
         $URI .= ArrayUtils::get('REQUEST_URI', $server, '');
         
         return new static($URI);
-        
-        /*
-        if($this->getServer('SCRIPT_NAME')) 
-            {
-                $base = dirname($this->getServer('SCRIPT_NAME'));
-            } 
-            else if($this->getServer('PHP_SELF')) 
-            {
-                $base = dirname($this->getServer('PHP_SELF'));
-            }
-            else
-            {
-                $base = '';
-            }
-            
-            if(!empty($base))
-            {
-                $requestUri = $this->getServer('REQUEST_URI');
-                $qpos = strpos($requestUri, '?');
-
-                if (false !== $qpos) 
-                {
-                    $requestUri = substr($requestUri, 0, $qpos);
-                }
-
-                if(false === strpos($requestUri, $base))
-                {
-                    // Using mod_rewrite ?
-                    $segments = explode('/', trim($base, '/'));
-
-                    do 
-                    {
-                        array_pop($segments);
-                        $base = '/' . implode('/', $segments);
-                    } 
-                    while(count($segments) > 0 && false === strpos($requestUri, $base));
-                }
-            }
-         
-            $this->setBaseURL($this->getScheme() . $this->getServer('HTTP_HOST', '') . $base);
-         */
     }
     
     /**
