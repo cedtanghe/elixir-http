@@ -45,6 +45,11 @@ class ServerRequest extends Request implements ServerRequestInterface
     protected $attributes = [];
     
     /**
+     * @var boolean
+     */
+    protected $fromURI = false;
+    
+    /**
      * @param string|UriInterface|null $URI
      * @param array $config
      * @throws \InvalidArgumentException
@@ -53,13 +58,13 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         $config += ['body' => 'php://input'];
         
-        parent::__construct($URI, $config);
-        
         // Server params
         if (!empty($config['server']))
         {
             $this->serverParams = (array)$config['server'];
         }
+        
+        parent::__construct($URI, $config);
         
         // Cookie params
         if (!empty($config['cookie']))
@@ -105,6 +110,19 @@ class ServerRequest extends Request implements ServerRequestInterface
         {
             $this->attributes = (array)$config['attributes'];
         }
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    protected function prepareURI($URI = null)
+    {
+        if (is_string($URI))
+        {
+            $URI = new URI($URI);
+        }
+        
+        return $URI ?: URI::createFromServer($this->serverParams);
     }
     
     /**
@@ -349,18 +367,44 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
     
     /**
+     * @return self
+     */
+    public function fromURI()
+    {
+        $this->fromURI = true;
+        return $this;
+    }
+    
+    /**
+     * @return self
+     */
+    public function fromHeaders()
+    {
+        $this->fromURI = false;
+        return $this;
+    }
+
+    /**
      * @return boolean 
      */
     public function isSecure()
     {
-        $HTTPS = $this->getServerParam('HTTPS');
-        
-        if ($HTTPS && $HTTPS !== 'off')
+        if ($this->fromURI)
         {
-            return true;
+            $this->fromURI = false;
+            return $this->URI->getScheme() === 'https';
         }
-        
-        return $this->getServerParam('HTTP_X_FORWARDED_PROTO') === 'https';
+        else
+        {
+            $HTTPS = $this->getServerParam('HTTPS');
+
+            if ($HTTPS && $HTTPS !== 'off')
+            {
+                return true;
+            }
+
+            return $this->getServerParam('HTTP_X_FORWARDED_PROTO') === 'https';
+        }
     }
     
     /**
@@ -421,7 +465,19 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getUser()
     {
-        return $this->getServerParam('PHP_AUTH_USER');
+        if ($this->fromURI)
+        {
+            $this->fromURI = false;
+            
+            $userInfos = $this->URI->getUserInfo();
+            $parsed = explode(':', $userInfos);
+            
+            return $parsed[0];
+        }
+        else
+        {
+            return $this->getServerParam('PHP_AUTH_USER');
+        }
     }
     
     /**
@@ -429,7 +485,19 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getPassword()
     {
-        return $this->getServerParam('PHP_AUTH_PW');
+        if ($this->fromURI)
+        {
+            $this->fromURI = false;
+            
+            $userInfos = $this->URI->getUserInfo();
+            $parsed = explode(':', $userInfos);
+            
+            return isset($parsed[1]) ? $parsed[1] : null;
+        }
+        else
+        {
+            return $this->getServerParam('PHP_AUTH_PW');
+        }
     }
     
     /**

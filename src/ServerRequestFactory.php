@@ -32,7 +32,7 @@ class ServerRequestFactory
         $cookie = $cookie ?: $_COOKIE;
         $files = UploadedFile::create($files ?: $_FILES);
         $headers = static::apacheRequestHeaders($server);
-        $URI = URI::createFromServer($server, $headers);
+        $URI = URI::createFromServer($server);
         
         return new ServerRequest(
             $URI, 

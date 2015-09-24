@@ -41,14 +41,6 @@ class Request implements RequestInterface
     {
         $config += ['body' => 'php://temp'];
         
-        // URI
-        if (is_string($URI))
-        {
-            $URI = new URI($URI);
-        }
-        
-        $this->URI = $URI ?: new URI();
-        
         // Method
         if (!empty($config['method']))
         {
@@ -91,8 +83,25 @@ class Request implements RequestInterface
         {
             $this->requestTarget = $config['request_target'];
         }
+        
+        // URI
+        $this->URI = $this->prepareURI();
     }
     
+    /**
+     * @param string|UriInterface|null $URI
+     * @return UriInterface
+     */
+    protected function prepareURI($URI = null)
+    {
+        if (is_string($URI))
+        {
+            $URI = new URI($URI);
+        }
+        
+        return $URI ?: new URI();
+    }
+
     /**
      * {@inheritdoc}
      */
