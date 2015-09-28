@@ -50,6 +50,11 @@ class ServerRequest extends Request implements ServerRequestInterface
     protected $fromURI = false;
     
     /**
+     * @var string|null
+     */
+    protected $baseURL;
+    
+    /**
      * @param string|UriInterface|null $URI
      * @param array $config
      * @throws \InvalidArgumentException
@@ -382,6 +387,109 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         $this->fromURI = false;
         return $this;
+    }
+    
+    /**
+     * @param string $value 
+     * @throws \InvalidArgumentException
+     */
+    public function setBaseURL($value)
+    {
+        $value = rtrim($value, '/');
+        
+        if (0 !== strpos((string)$this->URI, $value))
+        {
+            throw new \InvalidArgumentException('The base url must be included in the overall uri.');
+        }
+        
+        $this->baseURL = $value;
+    }
+
+    /**
+     * @return string 
+     */
+    public function getBaseURL()
+    {
+        if ($this->fromURI)
+        {
+            $this->fromURI = false;
+            
+            return URI::buildURIString([
+                'scheme' => $this->URI->getScheme(),
+                'authority' => $this->URI->getAuthority()
+            ]);
+        }
+        else
+        {
+            if(null === $this->baseURL)
+            {
+                if($this->getServerParam('SCRIPT_NAME')) 
+                {
+                    $base = dirname($this->getServerParam('SCRIPT_NAME'));
+                } 
+                else if($this->getServerParam('PHP_SELF')) 
+                {
+                    $base = dirname($this->getServerParam('PHP_SELF'));
+                }
+                else
+                {
+                    $base = '';
+                }
+
+                if(!empty($base))
+                {
+                    $requestURI = $this->getServerParam('REQUEST_URI');
+                    $qpos = strpos($requestURI, '?');
+
+                    if (false !== $qpos) 
+                    {
+                        $requestURI = substr($requestURI, 0, $qpos);
+                    }
+
+                    if(false === strpos($requestURI, $base))
+                    {
+                        // Using mod_rewrite ?
+                        $segments = explode('/', trim($base, '/'));
+
+                        do 
+                        {
+                            array_pop($segments);
+                            $base = '/' . implode('/', $segments);
+                        } 
+                        while(count($segments) > 0 && false === strpos($requestURI, $base));
+                    }
+                }
+
+                $this->setBaseURL(sprintf('%s://', $this->isSecure() ? 'https' : 'http') . $this->getServerParam('HTTP_HOST', '') . $base);
+            }
+        }
+        
+        return $this->baseURL;
+    }
+    
+    /**
+     * @return string 
+     */
+    public function getPathInfo()
+    {
+        if ($this->fromURI)
+        {
+            $this->fromURI = false;
+            
+            $pathInfo = str_replace($this->getBaseURL(), '', (string)$this->URI);
+            $qpos = strpos($pathInfo, '?');
+
+            if (false !== $qpos) 
+            {
+                $pathInfo = substr($pathInfo, 0, $qpos);
+            }
+
+            return '/' . ltrim($pathInfo, '/');
+        }
+        else
+        {
+            return $this->URI->getPath();
+        }
     }
 
     /**
