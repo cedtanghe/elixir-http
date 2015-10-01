@@ -55,7 +55,7 @@ class Request implements RequestInterface
         // Body
         $this->body = ($config['body'] instanceof StreamInterface) ? $config['body'] : StreamFactory::create($config['body']);
         
-        // Header
+        // Headers
         if (!empty($config['headers']))
         {
             foreach ($config['headers'] as $header => $values)

@@ -13,10 +13,11 @@ class StreamFactory
     /**
      * @param string|resource|StreamInterface $body
      * @return StreamInterface
+     * @throws \InvalidArgumentException
      */
     public static function create($body = null)
     {
         // Todo
-        return null;
+        throw new \InvalidArgumentException('Invalid stream.');
     }
 }

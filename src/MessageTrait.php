@@ -134,7 +134,7 @@ trait MessageTrait
         
         $new = clone $this;
         
-        foreach ($new->headers as $key => $value)
+        foreach ($new->headers as $key => $header)
         {
             if (strtolower($key) == strtolower($name))
             {
@@ -195,7 +195,7 @@ trait MessageTrait
         $new = clone $this;
         $headers = [];
         
-        foreach ($new->headers as $key => $value)
+        foreach ($new->headers as $key => $header)
         {
             if (strtolower($key) == strtolower($name))
             {
@@ -250,9 +250,33 @@ trait MessageTrait
     }
     
     /**
+     * {@inheritdoc}
+     */
+    public function getBody()
+    {
+        return $this->body;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function withBody(StreamInterface $body)
+    {
+        if (!$this->isValidBody($body))
+        {
+            throw new \InvalidArgumentException('Invalid stream.');
+        }
+        
+        $new = clone $this;
+        $new->body = $body;
+        
+        return $new;
+    }
+    
+    /**
      * @return array
      */
-    protected function parseCacheControl()
+    protected function getCacheControl()
     {
         if (!$this->hasHeader('Cache-Control') && !$this->hasHeader('Etag') && !$this->hasHeader('Last-Modified') && !$this->hasHeader('Expires'))
         {
@@ -294,62 +318,6 @@ trait MessageTrait
         }
 
         return [$line];
-    }
-    
-    /**
-     * @return array
-     */
-    public function getSortedHeaders()
-    {
-        $this->headers['Cache-Control'] = $this->parseCacheControl();
-        unset($this->headers['cache-control']);
-        
-        $headers = array_slice($this->headers, 0);
-        $headers['Cache-Control'] = $this->parseCacheControl();
-        ksort($headers);
-        
-        $sorted = [];
-        
-        foreach($headers as $key => $values)
-        {
-            if(preg_match('/^HTTP\/1\.(0|1) \d{3}.*$/', $key))
-            {
-                array_unshift($sorted, $key);
-            }
-            else
-            {
-                foreach($values as $value)
-                {
-                    $headers[] = sprintf('%s : %s', $key, $value);
-                }
-            }
-        }
-        
-        return $headers;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function withBody(StreamInterface $body)
-    {
-        if (!$this->isValidBody($body))
-        {
-            throw new \InvalidArgumentException('Invalid stream.');
-        }
-        
-        $new = clone $this;
-        $new->body = $body;
-        
-        return $new;
     }
     
     /**
