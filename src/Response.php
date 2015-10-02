@@ -407,16 +407,67 @@ class Response implements ResponseInterface
     /**
      * {@inheritdoc}
      */
-    public function send()
+    public function send($maxBufferLevel = null)
     {
         $new = $this->optimize();
         
         // Emit status line
-        header($this->getStatusLine());
+        header($new->getStatusLine());
         
         // Emit headers
+        if(headers_sent())
+        {
+            return false;
+        }
+        
+        foreach($new->cookies as $cookie)
+        {
+            if(!$cookie->send())
+            {
+                return false;
+            }
+        }
+        
+        foreach ($new->headers as $header => $values) 
+        {
+            $name  = $this->filterHeader($header);
+            
+            if (strtolower($name) === 'set-cookie')
+            {
+                continue;
+            }
+            
+            $first = true;
+            
+            foreach ($values as $value)
+            {
+                header(
+                    sprintf(
+                        '%s: %s',
+                        $name,
+                        $value
+                    ), 
+                    $first
+                );
+                
+                $first = false;
+            }
+        }
         
         // Emit body
+        if (null === $maxBufferLevel)
+        {
+            $maxBufferLevel = ob_get_level();
+        }
+        
+        while (ob_get_level() > $maxBufferLevel)
+        {
+            ob_end_flush();
+        }
+        
+        echo $new->body;
+        
+        return true;
     }
     
     /**

@@ -144,7 +144,7 @@ trait MessageTrait
         
         $new->headers[$name] = (array)$value;
         
-        if (strtolower($name)== 'set-cookie')
+        if (strtolower($name) == 'set-cookie')
         {
             $cookies = [];
             
@@ -206,7 +206,7 @@ trait MessageTrait
         
         $new->headers[$name] = array_merge($headers, (array)$value);
         
-        if (strtolower($name)== 'set-cookie')
+        if (strtolower($name) == 'set-cookie')
         {
             foreach((array)$value as $cookie)
             {
@@ -318,6 +318,15 @@ trait MessageTrait
         }
 
         return [$line];
+    }
+    
+    /**
+     * @param string $header
+     * string type
+     */
+    protected function filterHeader($header)
+    {
+        return str_replace(' ', '-', ucwords(str_replace('-', ' ', $header)));
     }
     
     /**

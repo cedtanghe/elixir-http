@@ -22,7 +22,8 @@ interface ResponseInterface extends PSRResponseInterface
     public function withCharset($charset);
     
     /**
+     * @param int $maxBufferLevel
      * @return boolean
      */
-    public function send();
+    public function send($maxBufferLevel = null);
 }
