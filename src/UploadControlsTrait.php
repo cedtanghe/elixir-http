@@ -21,8 +21,8 @@ trait UploadControlsTrait
     public function getDefaultCatalogMessages()
     {
         return [
-            'file_not_uploaded' => $this->messageCatalogue->translate('The file is not uploaded.'),
-            'upload_error' => $this->messageCatalogue->translate('An error occurred during upload.')
+            'file_not_uploaded' => 'The file is not uploaded.',
+            'upload_error' => 'An error occurred during upload.'
         ];
     }
     
@@ -38,7 +38,7 @@ trait UploadControlsTrait
         
         if (!$this->messagesCatalogue)
         {
-            $this->setMessagesCatalog(new MessagesCatalog());
+            $this->setMessagesCatalog(MessagesCatalog::instance());
         }
         
         $this->validationErrors = [];
