@@ -3,8 +3,8 @@
 namespace Elixir\HTTP;
 
 use Elixir\HTTP\Request;
+use Elixir\HTTP\ServerRequestInterface;
 use Elixir\STDLib\ArrayUtils;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
 

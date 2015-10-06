@@ -411,15 +411,15 @@ class Response implements ResponseInterface
     {
         $new = $this->optimize();
         
-        // Emit status line
-        header($new->getStatusLine());
-        
-        // Emit headers
         if(headers_sent())
         {
             return false;
         }
         
+        // Emit status line
+        header($new->getStatusLine());
+        
+        // Emit headers
         foreach($new->cookies as $cookie)
         {
             if(!$cookie->send())
@@ -476,7 +476,18 @@ class Response implements ResponseInterface
     public function __toString()
     {
         $new = $this->optimize();
+        $headers = [$new->getStatusLine()];
         
-        // Todo
+        foreach ($new->headers as $header => $values) 
+        {
+            $name  = $this->filterHeader($header);
+            
+            foreach ($values as $value)
+            {
+                $headers[] = sprintf('%s: %s', $name, $value);
+            }
+        }
+        
+        return implode($headers, "\r\n") . "\r\n\r\n" . $new->body;
     }
 }
