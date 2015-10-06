@@ -72,7 +72,6 @@ class ServerRequestFactory
                 { 
                     $name = strtr(substr($key, 5), '_', ' ');
                     $name = strtr(ucwords(strtolower($name)), ' ', '-');
-                    $name = strtolower($name);
                     
                     $headers[$name][] = $value;
                 } 
@@ -80,7 +79,6 @@ class ServerRequestFactory
                 { 
                     $name = substr($key, 8);
                     $name = 'Content-' . (($name == 'MD5') ? $name : ucfirst(strtolower($name)));
-                    $name = strtolower($name);
                     
                     $headers[$name][] = $value;
                 } 

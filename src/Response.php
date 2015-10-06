@@ -80,6 +80,37 @@ class Response implements ResponseInterface
     ];
     
     /**
+     * @param ServerRequestInterface $request
+     * @return boolean
+     */
+    public static function isNotModified(ServerRequestInterface $request)
+    {
+        $lastModified = $this->getHeaderLine('Last-Modified');
+        $ifModifiedSince = $request->getHeaderLine('If-Modified-Since');
+        
+        if(null !== $lastModified && null !== $ifModifiedSince)
+        {
+            if($lastModified === strtotime($ifModifiedSince))
+            {
+                return true;
+            }
+        }
+        
+        $etag = $this->getHeaderLine('Etag');
+        $ifNoneMatch = $request->getHeaderLine('If-None-Match');
+        
+        if(null !== $etag && null !== $ifNoneMatch)
+        {
+            if($etag === $ifNoneMatch)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * @var string
      */
     protected $reasonPhrase = '';
