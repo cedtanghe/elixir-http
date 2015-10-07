@@ -11,11 +11,13 @@ use Psr\Http\Message\StreamInterface;
 class StreamFactory
 {
     /**
-     * @param string|resource|StreamInterface $body
+     * @param string|resource|StreamInterface $stream
+     * @param string $mode
+     * @param string $content
      * @return StreamInterface
      * @throws \InvalidArgumentException
      */
-    public static function create($body = null)
+    public static function create($stream = null, $mode = 'r', $content = null)
     {
         // Todo
         throw new \InvalidArgumentException('Invalid stream.');

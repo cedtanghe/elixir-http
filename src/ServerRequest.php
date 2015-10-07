@@ -61,7 +61,10 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function __construct($URI = null, array $config = [])
     {
-        $config += ['body' => 'php://input'];
+        $config += [
+            'body' => 'php://input',
+            'body_mode' => 'r'
+        ];
         
         // Server params
         if (!empty($config['server']))

@@ -39,7 +39,11 @@ class Request implements RequestInterface
      */
     public function __construct($URI = null, array $config = [])
     {
-        $config += ['body' => 'php://temp'];
+        $config += [
+            'body' => 'php://temp',
+            'body_mode' => 'wb+',
+            'body_content' => null
+        ];
         
         // Method
         if (!empty($config['method']))
@@ -53,23 +57,41 @@ class Request implements RequestInterface
         }
         
         // Body
-        $this->body = ($config['body'] instanceof StreamInterface) ? $config['body'] : StreamFactory::create($config['body']);
+        if ($config['body'] instanceof StreamInterface)
+        {
+            $this->body = $config['body'];
+            
+            if (null !== $config['body_content'])
+            {
+                $this->body->write($config['body_content']);
+            }
+        }
+        else
+        {
+            $this->body = StreamFactory::create($config['body'], $config['body_mode'], $config['body_content']);
+        }
         
         // Headers
         if (!empty($config['headers']))
         {
-            foreach ($config['headers'] as $header => $values)
+            $headers = [];
+            
+            foreach ($config['headers'] as $header => &$values)
             {
-                foreach ($values as $value)
+                $name = $this->filterHeader($header);
+                
+                foreach ((array)$values as $value)
                 {
                     if (!$this->isValidHeaderValue($value))
                     {
                         throw new \InvalidArgumentException(sprintf('Invalid header value for "%s".', $header));
                     }
+                    
+                    $headers[$name][] = $value;
                 }
             }
             
-            $this->headers = $config['headers'];
+            $this->headers = $headers;
         }
         
         // Protocol

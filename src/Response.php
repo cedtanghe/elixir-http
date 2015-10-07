@@ -132,12 +132,26 @@ class Response implements ResponseInterface
     public function __construct(array $config = [])
     {
         $config += [
-            'body' => 'php://memory',
+            'body' => 'php://temp',
+            'body_mode' => 'wb+',
+            'body_content' => null,
             'status_code' => 200
         ];
         
         // Body
-        $this->body = ($config['body'] instanceof StreamInterface) ? $config['body'] : StreamFactory::create($config['body']);
+        if ($config['body'] instanceof StreamInterface)
+        {
+            $this->body = $config['body'];
+            
+            if (null !== $config['body_content'])
+            {
+                $this->body->write($config['body_content']);
+            }
+        }
+        else
+        {
+            $this->body = StreamFactory::create($config['body'], $config['body_mode'], $config['body_content']);
+        }
         
         // Status
         if (!$this->isValidStatus($config['status_code']))
@@ -160,18 +174,24 @@ class Response implements ResponseInterface
         // Headers
         if (!empty($config['headers']))
         {
-            foreach ($config['headers'] as $header => $values)
+            $headers = [];
+            
+            foreach ($config['headers'] as $header => &$values)
             {
-                foreach ($values as $value)
+                $name = $this->filterHeader($header);
+                
+                foreach ((array)$values as $value)
                 {
                     if (!$this->isValidHeaderValue($value))
                     {
                         throw new \InvalidArgumentException(sprintf('Invalid header value for "%s".', $header));
                     }
+                    
+                    $headers[$name][] = $value;
                 }
             }
             
-            $this->headers = $config['headers'];
+            $this->headers = $headers;
         }
     }
     
