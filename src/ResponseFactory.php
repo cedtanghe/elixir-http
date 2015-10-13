@@ -3,7 +3,7 @@
 namespace Elixir\HTTP;
 
 use Elixir\HTTP\Response;
-use Elixir\HTTP\Stream;
+use Elixir\HTTP\StreamFactory;
 use Psr\Http\Message\ResponseInterface as PSRResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -61,8 +61,8 @@ class ResponseFactory
         else
         {
             $response = $response->withStatus(304);
-            $response = $response->withBody(new Stream('php://temp', 'r'));
-
+            $response = $response->withBody(StreamFactory::create('php://temp', 'r'));
+            
             foreach (array('Allow', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Type', 'Last-Modified') as $header)
             {
                 $response = $response->withoutHeader($header);

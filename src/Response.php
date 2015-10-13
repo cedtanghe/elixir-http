@@ -101,7 +101,7 @@ class Response implements ResponseInterface
     public function __construct(array $config = [])
     {
         $config += [
-            'body' => 'php://temp',
+            'body' => 'php://memory',
             'body_mode' => 'wb+',
             'body_content' => null,
             'status_code' => 200

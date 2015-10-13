@@ -44,7 +44,7 @@ class ServerRequestFactory
                 'files' => $files,
                 'headers' => $headers,
                 'method' => isset($server['_method']) ? $server['_method'] : (isset($server['REQUEST_METHOD']) ? $server['REQUEST_METHOD'] : 'GET'),
-                'body' => 'php://input'
+                'body' => StreamFactory::create('php://input', 'r')
             ]
         );
     }

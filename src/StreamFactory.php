@@ -2,6 +2,8 @@
 
 namespace Elixir\HTTP;
 
+use Elixir\HTTP\PhpInputStream;
+use Elixir\HTTP\Stream;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -15,11 +17,24 @@ class StreamFactory
      * @param string $mode
      * @param string $content
      * @return StreamInterface
-     * @throws \InvalidArgumentException
      */
-    public static function create($stream = null, $mode = 'r', $content = null)
+    public static function create($stream, $mode = 'r', $content = null)
     {
-        // Todo
-        throw new \InvalidArgumentException('Invalid stream.');
+        if ($stream === 'php://input')
+        {
+            $content = null;
+            $stream = new PhpInputStream($stream, 'r');
+        }
+        else if (!$stream instanceof StreamInterface)
+        {
+            $stream = new Stream($stream, $mode);
+        }
+        
+        if (null !== $content)
+        {
+            $stream->write($content);
+        }
+        
+        return $stream;
     }
 }
