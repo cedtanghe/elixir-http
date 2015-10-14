@@ -142,6 +142,11 @@ class Stream implements StreamInterface
      */
     public function isSeekable()
     {
+        if (null === $this->resource)
+        {
+            return false;
+        }
+        
         return $this->getMetadata('seekable');
     }
     
@@ -171,6 +176,11 @@ class Stream implements StreamInterface
      */
     public function isWritable()
     {
+        if (null === $this->resource)
+        {
+            return false;
+        }
+        
         $mode = $this->getMetadata('mode');
         
         foreach (['x', 'w', 'c', 'a', '+'] as $m)
@@ -202,6 +212,11 @@ class Stream implements StreamInterface
      */
     public function isReadable()
     {
+        if (null === $this->resource)
+        {
+            return false;
+        }
+        
         $mode = $this->getMetadata('mode');
         return strstr($mode, 'r') || strstr($mode, '+');
     }
@@ -237,6 +252,11 @@ class Stream implements StreamInterface
      */
     public function getMetadata($key = null)
     {
+        if (null === $this->resource)
+        {
+            return null;
+        }
+        
         if (null === $this->metadata)
         {
             $this->metadata = stream_get_meta_data($this->resource);

@@ -61,18 +61,19 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function __construct($URI = null, array $config = [])
     {
-        $config += [
-            'body' => 'php://input',
-            'body_mode' => 'r'
-        ];
+        // Body
+        if (!isset($config['body']))
+        {
+            $config['body'] = StreamFactory::create('php://input', ['mode' => 'r']);
+        }
+        
+        parent::__construct($URI, $config);
         
         // Server params
         if (!empty($config['server']))
         {
             $this->serverParams = (array)$config['server'];
         }
-        
-        parent::__construct($URI, $config);
         
         // Cookie params
         if (!empty($config['cookie']))

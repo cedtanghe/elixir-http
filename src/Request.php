@@ -39,12 +39,6 @@ class Request implements RequestInterface
      */
     public function __construct($URI = null, array $config = [])
     {
-        $config += [
-            'body' => 'php://temp',
-            'body_mode' => 'wb+',
-            'body_content' => null
-        ];
-        
         // Method
         if (!empty($config['method']))
         {
@@ -57,18 +51,13 @@ class Request implements RequestInterface
         }
         
         // Body
-        if ($config['body'] instanceof StreamInterface)
+        if (isset($config['body']) && ($config['body'] instanceof StreamInterface))
         {
             $this->body = $config['body'];
-            
-            if (null !== $config['body_content'])
-            {
-                $this->body->write($config['body_content']);
-            }
         }
         else
         {
-            $this->body = StreamFactory::create($config['body'], $config['body_mode'], $config['body_content']);
+            $this->body = StreamFactory::create('php://temp', ['mode' => 'wb+']);
         }
         
         // Headers

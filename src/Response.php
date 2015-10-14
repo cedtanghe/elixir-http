@@ -101,25 +101,23 @@ class Response implements ResponseInterface
     public function __construct(array $config = [])
     {
         $config += [
-            'body' => 'php://memory',
-            'body_mode' => 'wb+',
-            'body_content' => null,
-            'status_code' => 200
+            'status_code' => 200,
+            'content' => null
         ];
         
         // Body
-        if ($config['body'] instanceof StreamInterface)
+        if (isset($config['body']) && ($config['body'] instanceof StreamInterface))
         {
             $this->body = $config['body'];
-            
-            if (null !== $config['body_content'])
-            {
-                $this->body->write($config['body_content']);
-            }
         }
         else
         {
-            $this->body = StreamFactory::create($config['body'], $config['body_mode'], $config['body_content']);
+            $this->body = StreamFactory::create('php://memory', ['mode' => 'wb+']);
+        }
+        
+        if (null !== $config['content'])
+        {
+            $this->body->write($config['content']);
         }
         
         // Status
@@ -358,7 +356,8 @@ class Response implements ResponseInterface
         }
         else
         {
-            $new->body = StreamFactory::create('');
+            $new->body = clone $new->body;
+            $new->body->detach();
         }
         
         // Remove status line

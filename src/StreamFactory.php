@@ -2,7 +2,6 @@
 
 namespace Elixir\HTTP;
 
-use Elixir\HTTP\PhpInputStream;
 use Elixir\HTTP\Stream;
 use Psr\Http\Message\StreamInterface;
 
@@ -13,28 +12,34 @@ use Psr\Http\Message\StreamInterface;
 class StreamFactory
 {
     /**
-     * @param string|resource|StreamInterface $stream
-     * @param string $mode
-     * @param string $content
+     * @param string|resource|StreamInterface $streamOrContent
+     * @param array $options
      * @return StreamInterface
      */
-    public static function create($stream, $mode = 'r', $content = null)
+    public static function create($streamOrContent, array $options = [])
     {
-        if ($stream === 'php://input')
+        $stream = $streamOrContent;
+        
+        if ($stream instanceof StreamInterface)
         {
-            $content = null;
-            $stream = new PhpInputStream($stream, 'r');
-        }
-        else if (!$stream instanceof StreamInterface)
-        {
-            $stream = new Stream($stream, $mode);
+            return $stream;
         }
         
-        if (null !== $content)
+        if (is_string($stream) && !is_file($stream)) 
         {
-            $stream->write($content);
+            if (0 !== strpos($stream, 'php://'))
+            {
+                $options['content'] = $stream;
+
+                if (!isset($options['mode']))
+                {
+                    $options['mode'] = 'r+';
+                }
+
+                $stream = 'php://temp';
+            }
         }
         
-        return $stream;
+        return new Stream($stream, $options);
     }
 }

@@ -53,15 +53,12 @@ class ResponseFactory
     {
         if (null === $response)
         {
-            $response = static::create([
-                'status_code' => 304,
-                'body_content' => null
-            ]);
+            $response = static::create(['status_code' => 304]);
         }
         else
         {
             $response = $response->withStatus(304);
-            $response = $response->withBody(StreamFactory::create('php://temp', 'r'));
+            $response = $response->withBody(StreamFactory::create('php://temp', ['mode' => 'r']));
             
             foreach (array('Allow', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Type', 'Last-Modified') as $header)
             {
@@ -115,7 +112,7 @@ class ResponseFactory
         }
         
         return new Response([
-            'body_content' => implode("\r\n", $content),
+            'content' => implode("\r\n", $content),
             'status_code' => $status,
             'protocol' => $protocol,
             'headers' => $headers
@@ -139,7 +136,7 @@ class ResponseFactory
      */
     public static function createHTML($HTML, $status = 200, array $config = [])
     {
-        $config['body_content'] = $HTML;
+        $config['content'] = $HTML;
         $config['status_code'] = $status;
         $config['headers']['content-type'] = ['text/html; charset=UTF-8'];
         
@@ -158,7 +155,7 @@ class ResponseFactory
         json_encode(null);
         $JSON = json_encode($data, $encodingOptions);
         
-        $config['body_content'] = $JSON;
+        $config['content'] = $JSON;
         $config['status_code'] = $status;
         $config['headers']['content-type'] = ['application/json'];
         
@@ -174,7 +171,6 @@ class ResponseFactory
      */
     public static function createRedirect($URI, $status = 302, array $config = [], $send = true)
     {
-        $config['body_content'] = null;
         $config['status_code'] = $status;
         $config['headers']['location'] = [(string)$URI];
         
