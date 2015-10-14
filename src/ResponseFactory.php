@@ -120,6 +120,21 @@ class ResponseFactory
     }
     
     /**
+     * @param PSRResponseInterface $response
+     * @return ResponseInterface
+     */
+    public static function convert(PSRResponseInterface $response)
+    {
+        return static::create([
+            'status_code' => $response->getStatusCode(),
+            'reason_phrase' => $response->getReasonPhrase(),
+            'protocol' => $response->getProtocolVersion(),
+            'headers' => $response->getHeaders(),
+            'body' => $response->getBody()
+        ]);
+    }
+
+    /**
      * @param array $config
      * @return Response
      */
@@ -132,7 +147,7 @@ class ResponseFactory
      * @param string $HTML
      * @param int $status
      * @param array $config
-     * @return Response
+     * @return ResponseInterface
      */
     public static function createHTML($HTML, $status = 200, array $config = [])
     {
@@ -148,7 +163,7 @@ class ResponseFactory
      * @param int $status
      * @param int $encodingOptions
      * @param array $config
-     * @return Response
+     * @return ResponseInterface
      */
     public static function createJSON($data, $status = 200, $encodingOptions = 0, array $config = [])
     {
@@ -167,14 +182,14 @@ class ResponseFactory
      * @param int $status
      * @param array $config
      * @param boolean $send
-     * @return Response
+     * @return ResponseInterface|void
      */
     public static function createRedirect($URI, $status = 302, array $config = [], $send = true)
     {
         $config['status_code'] = $status;
         $config['headers']['location'] = [(string)$URI];
         
-        $response = new Response($config);
+        $response = static::create($config);
         
         if ($send)
         {

@@ -205,6 +205,17 @@ class Response implements ResponseInterface
      */
     public function getCharset()
     {
+        if (null === $this->charset)
+        {
+            if($this->hasHeader('Content-Type'))
+            {
+                if (preg_match('/charset=([\w\d\-]+)/i', $this->getHeaderLine('Content-Type'), $matches))
+                {
+                    $this->charset = $matches[1];
+                }
+            }
+        }
+        
         return $this->charset;
     }
     
