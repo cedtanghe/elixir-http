@@ -3,6 +3,7 @@
 namespace Elixir\HTTP;
 
 use Elixir\Filter\FilterTrait;
+use Elixir\STDLib\Facade\I18N;
 use Elixir\STDLib\MessagesCatalog;
 use Elixir\Validator\ValidateTrait;
 
@@ -21,8 +22,8 @@ trait UploadControlsTrait
     public function getDefaultCatalogMessages()
     {
         return [
-            'file_not_uploaded' => 'The file is not uploaded.',
-            'upload_error' => 'An error occurred during upload.'
+            'file_not_uploaded' => I18N::__('The file is not uploaded.', ['context' => 'elixir']),
+            'upload_error' => I18N::__('An error occurred during upload.', ['context' => 'elixir'])
         ];
     }
     

@@ -479,7 +479,10 @@ class ServerRequest extends Request implements ServerRequestInterface
         if ($this->fromURI)
         {
             $this->fromURI = false;
-            
+            return $this->URI->getPath();
+        }
+        else
+        {
             $pathInfo = str_replace($this->getBaseURL(), '', (string)$this->URI);
             $qpos = strpos($pathInfo, '?');
 
@@ -489,10 +492,6 @@ class ServerRequest extends Request implements ServerRequestInterface
             }
 
             return '/' . ltrim($pathInfo, '/');
-        }
-        else
-        {
-            return $this->URI->getPath();
         }
     }
 
