@@ -55,7 +55,6 @@ class ServerRequest extends Request implements ServerRequestInterface
     protected $baseURL;
     
     /**
-     *
      * @var ServerRequestInterface 
      */
     protected $parentRequest;
@@ -151,7 +150,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function setParentRequest(self $request)
+    public function setParentRequest(ServerRequestInterface $request)
     {
         $this->parentRequest = $request;
     }
