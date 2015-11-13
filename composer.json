@@ -11,6 +11,10 @@
     "repositories": [
         {
             "type": "vcs",
+            "url": "https://github.com/cedtanghe/elixir-stdlib"
+        },
+        {
+            "type": "vcs",
             "url": "https://github.com/cedtanghe/elixir-validator"
         },
         {
