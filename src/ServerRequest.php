@@ -55,6 +55,12 @@ class ServerRequest extends Request implements ServerRequestInterface
     protected $baseURL;
     
     /**
+     *
+     * @var ServerRequestInterface 
+     */
+    protected $parentRequest;
+    
+    /**
      * @param string|UriInterface|null $URI
      * @param array $config
      * @throws \InvalidArgumentException
@@ -132,6 +138,38 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         
         return $URI ?: URI::createFromServer($this->serverParams);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function isMainRequest()
+    {
+        return null === $this->parentRequest;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function setParentRequest(self $request)
+    {
+        $this->parentRequest = $request;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function getParentRequest()
+    {
+        return $this->parentRequest;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function getMainRequest()
+    {
+        return $this->parentRequest ? $this->parentRequest->getMainRequest() : $this;
     }
     
     /**
