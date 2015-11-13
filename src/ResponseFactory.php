@@ -5,7 +5,7 @@ namespace Elixir\HTTP;
 use Elixir\HTTP\Response;
 use Elixir\HTTP\StreamFactory;
 use Psr\Http\Message\ResponseInterface as PSRResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as PSRServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -15,10 +15,10 @@ use Psr\Http\Message\UriInterface;
 class ResponseFactory
 {
     /**
-     * @param ServerRequestInterface $request
+     * @param PSRServerRequestInterface $request
      * @return boolean
      */
-    public static function isNotModified(ServerRequestInterface $request)
+    public static function isNotModified(PSRServerRequestInterface $request)
     {
         $lastModified = $this->getHeaderLine('Last-Modified');
         $ifModifiedSince = $request->getHeaderLine('If-Modified-Since');
