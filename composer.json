@@ -41,7 +41,5 @@
         }
     },
     "suggest": {
-        "elixir/elixir-validator": "*",
-        "elixir/elixir-filter": "*"
     }
 }
