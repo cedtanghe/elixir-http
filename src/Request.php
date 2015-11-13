@@ -90,7 +90,7 @@ class Request implements RequestInterface
         }
         
         // Request target
-        if (!isset($config['request_target']))
+        if (isset($config['request_target']))
         {
             $this->requestTarget = $config['request_target'];
         }
@@ -282,6 +282,6 @@ class Request implements RequestInterface
      */
     public function isValidMethod($method)
     {
-        return in_array($method, ['HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE']);
+        return in_array($method, ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE']);
     }
 }
