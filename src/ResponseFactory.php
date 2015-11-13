@@ -144,6 +144,14 @@ class ResponseFactory
     }
     
     /**
+     * @return ResponseInterface
+     */
+    public static function createEmpty()
+    {
+        return static::create(['status_code' => 204]);
+    }
+    
+    /**
      * @param string $HTML
      * @param int $status
      * @param array $config
