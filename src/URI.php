@@ -94,7 +94,7 @@ class URI implements UriInterface
     /**
      * @var string
      */
-    protected $URI;
+    protected $URI = '';
     
     /**
      * @var string
@@ -137,15 +137,12 @@ class URI implements UriInterface
      */
     public function __construct($URI = '')
     {
-        if (!empty($URI))
+        if (empty($URI) || false === filter_var($URI, FILTER_VALIDATE_URL) || false === ($parts = parse_url($URI)))
         {
-            if (false === filter_var($URI, FILTER_VALIDATE_URL) || false === ($parts = parse_url($URI)))
-            {
-                throw new \InvalidArgumentException('This URI is invalid.');
-            }
-            
-            $this->URI = $URI;
+            $URI = '';
         }
+
+        $this->URI = $URI;
         
         // Scheme
         if (isset($parts['scheme']))
