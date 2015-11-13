@@ -137,9 +137,14 @@ class URI implements UriInterface
      */
     public function __construct($URI = '')
     {
-        if (false === filter_var($URI, FILTER_VALIDATE_URL) || false === ($parts = parse_url($URI)))
+        if (!empty($URI))
         {
-            throw new \InvalidArgumentException('This URI is invalid.');
+            if (false === filter_var($URI, FILTER_VALIDATE_URL) || false === ($parts = parse_url($URI)))
+            {
+                throw new \InvalidArgumentException('This URI is invalid.');
+            }
+            
+            $this->URI = $URI;
         }
         
         // Scheme
@@ -213,8 +218,6 @@ class URI implements UriInterface
         {
             $this->fragment = $parts['fragment'];
         }
-        
-        $this->URI = $URI;
     }
     
     /**
