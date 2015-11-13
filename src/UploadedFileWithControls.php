@@ -10,8 +10,7 @@ use Elixir\Validator\ValidateTrait;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-
-trait UploadControlsTrait 
+class UploadedFileWithControls extends UploadedFile
 {
     use ValidateTrait;
     use FilterTrait;
@@ -101,7 +100,7 @@ trait UploadControlsTrait
             $filter = $config['filter'];
             $options = $config['options'];
 
-            $filter->filter(&$this, $options);
+            $filter->filter($this, $options);
         }
         
         return true;

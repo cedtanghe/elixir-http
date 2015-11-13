@@ -2,7 +2,6 @@
 
 namespace Elixir\HTTP;
 
-use Elixir\HTTP\UploadControlsTrait;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -12,8 +11,6 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class UploadedFile implements UploadedFileInterface
 {
-    use UploadControlsTrait;
-    
     /**
      * @param array $file
      * @return array|UploadedFileInterface
@@ -38,7 +35,16 @@ class UploadedFile implements UploadedFileInterface
             return $uploadedFiles;
         }
         
-        return new static(
+        if (trait_exists('\Elixir\Validator\ValidateTrait') && trait_exists('\Elixir\Filter\FilterTrait'))
+        {
+            $class = '\Elixir\HTTP\UploadedFileWithControls';
+        }
+        else
+        {
+            $class = __CLASS__;
+        }
+        
+        return new $class(
             $file['tmp_name'],
             $file['size'],
             $file['error'],
