@@ -18,7 +18,7 @@ interface ServerRequestInterface extends PSRRequestInterface
     /**
      * @param self $request
      */
-    public function setParentRequest(ServerRequestInterface $request);
+    public function setParentRequest(self $request);
     
     /**
      * @return self|null;
