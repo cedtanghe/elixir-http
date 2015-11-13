@@ -13,10 +13,15 @@ class UploadedFile implements UploadedFileInterface
 {
     /**
      * @param array $file
-     * @return array|UploadedFileInterface
+     * @return array|UploadedFileInterface|null
      */
     public static function create(array $file)
     {
+        if (empty($file))
+        {
+            return null;
+        }
+        
         if (is_array($file['tmp_name']))
         {
             $uploadedFiles = [];

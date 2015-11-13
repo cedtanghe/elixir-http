@@ -16,7 +16,7 @@ class UploadedFileWithControls extends UploadedFile
     use FilterTrait;
     
     /**
-     * @see ValidateTrait::getDefaultCatalogMessages()
+     * {@inheritdoc}
      */
     public function getDefaultCatalogMessages()
     {
@@ -27,7 +27,7 @@ class UploadedFileWithControls extends UploadedFile
     }
     
     /**
-     * @see ValidateTrait::validate()
+     * {@inheritdoc}
      */
     public function validate()
     {
@@ -91,7 +91,7 @@ class UploadedFileWithControls extends UploadedFile
     }
     
     /**
-     * @see FilterTrait::filter()
+     * {@inheritdoc}
      */
     public function filter()
     {
