@@ -70,14 +70,14 @@ class Stream implements StreamInterface
     {
         $error = null;
         
-        if (is_string($stream)) 
+        if (is_string($resource)) 
         {
             set_error_handler(function($e) use (&$error) 
             {
                 $error = $e;
             }, E_WARNING);
             
-            $resource = fopen($stream, $mode);
+            $resource = fopen($resource, $mode);
             restore_error_handler();
         }
         
