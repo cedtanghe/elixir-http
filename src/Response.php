@@ -4,7 +4,7 @@ namespace Elixir\HTTP;
 
 use Elixir\HTTP\ResponseInterface;
 use Elixir\STDLib\ArrayUtils;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as PSRServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -310,10 +310,10 @@ class Response implements ResponseInterface
     }
     
     /**
-     * @param ServerRequestInterface $request
+     * @param PSRServerRequestInterface $request
      * @return self
      */
-    public function optimize(ServerRequestInterface $request = null)
+    public function optimize(PSRServerRequestInterface $request = null)
     {
         $new = clone $this;
         
