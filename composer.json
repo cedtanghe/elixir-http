@@ -2,6 +2,7 @@
     "name": "elixir/elixir-http",
     "description": "Component http",
     "version": "1.0.0",
+    "minimum-stability": "dev",
     "license": "BSD-3-Clause",
     "keywords": [
         "elixir",
