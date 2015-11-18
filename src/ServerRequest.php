@@ -401,17 +401,29 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withoutAttribute($key)
     {
-        if (ArrayUtils::has($key, $this->attributes)) 
+        $new = clone $this;
+        
+        if (!ArrayUtils::has($key, $new->attributes)) 
         {
-            return clone $this;
+            return $new;
         }
         
-        $new = clone $this;
-        ArrayUtils::remove($key, $this->attributes);
+        ArrayUtils::remove($key, $new->attributes);
         
         return $new;
     }
     
+    /**
+     * {@inheritdoc}
+     */
+    public function withoutAttributes()
+    {
+        $new = clone $this;
+        $new->attributes = [];
+        
+        return $new;
+    }
+
     /**
      * @return self
      */

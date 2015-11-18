@@ -2,13 +2,13 @@
 
 namespace Elixir\HTTP;
 
-use Psr\Http\Message\RequestInterface as PSRRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as PSRServerRequestInterface;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
 
-interface ServerRequestInterface extends PSRRequestInterface
+interface ServerRequestInterface extends PSRServerRequestInterface
 {
     /**
      * @return boolean
@@ -39,4 +39,9 @@ interface ServerRequestInterface extends PSRRequestInterface
      * @return string 
      */
     public function getPathInfo();
+    
+    /**
+     * @return self
+     */
+    public function withoutAttributes();
 }
