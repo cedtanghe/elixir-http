@@ -277,6 +277,14 @@ class Request implements RequestInterface
     }
     
     /**
+     * @return string
+     */
+    public function getURL()
+    {
+        return (string)$this->URI;
+    }
+    
+    /**
      * @param string $method
      * @return boolean
      */
