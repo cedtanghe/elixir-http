@@ -3,7 +3,6 @@
 namespace Elixir\HTTP;
 
 use Elixir\HTTP\ResponseInterface;
-use Elixir\STDLib\ArrayUtils;
 use Psr\Http\Message\ServerRequestInterface as PSRServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -389,12 +388,13 @@ class Response implements ResponseInterface
         // Check Cache-control
         // Cache-Control is removed for SSL encrypted downloads when using IE < 9 (http://support.microsoft.com/kb/323308)
         $serverParams = $request ? $request->getServerParams : $_SERVER;
-        $HTTPS =  ArrayUtils::get('HTTPS', $serverParams);
+        $HTTPS =  isset($serverParams['HTTPS']) ? $serverParams['HTTPS'] : '';
         
-        $userAgent = ArrayUtils::get('HTTP_USER_AGENT', $serverParams, '');
+        $userAgent = isset($serverParams['HTTP_USER_AGENT']) ? $serverParams['HTTP_USER_AGENT'] : '';
+        $xForwardedProto = isset($serverParams['HTTP_X_FORWARDED_PROTO']) ? $serverParams['HTTP_X_FORWARDED_PROTO'] : '';
         $secure = false;
         
-        if (($HTTPS && $HTTPS !== 'off') || ArrayUtils::get('HTTP_X_FORWARDED_PROTO', $serverParams) === 'https')
+        if (($HTTPS && $HTTPS !== 'off') || $xForwardedProto === 'https')
         {
             $secure = true;
         }
