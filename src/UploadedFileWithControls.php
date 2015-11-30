@@ -77,14 +77,13 @@ class UploadedFileWithControls extends UploadedFile
                         $this->validationErrors = [$this->messagesCatalogue->get('upload_error')];
                     }
                 }
-            break;
+                break;
             case UPLOAD_ERR_INI_SIZE:
             case UPLOAD_ERR_FORM_SIZE:
             case UPLOAD_ERR_PARTIAL:
             case UPLOAD_ERR_NO_FILE:
             default:
                 $this->validationErrors = [$this->messagesCatalogue->get('upload_error')];
-            break;
         }
         
         return $this->hasValidationError();
