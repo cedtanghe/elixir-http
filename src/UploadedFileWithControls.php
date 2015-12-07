@@ -59,7 +59,7 @@ class UploadedFileWithControls extends UploadedFile
                         {
                             $this->validationErrors = array_merge($this->validationErrors, $validator->getErrors());
                             
-                            if ($this->validationErrorBreak)
+                            if ($this->breakChainValidationOnFailure)
                             {
                                 break;
                             }
