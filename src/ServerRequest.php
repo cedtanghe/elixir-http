@@ -399,6 +399,17 @@ class ServerRequest extends Request implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
+    public function withAttribute($key, $value)
+    {
+        $new = clone $this;
+        ArrayUtils::set($key, $value, $new->attributes);
+        
+        return $new;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
     public function withoutAttribute($key)
     {
         $new = clone $this;
@@ -409,6 +420,17 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         
         ArrayUtils::remove($key, $new->attributes);
+        
+        return $new;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function withAttributes(array $attributes)
+    {
+        $new = clone $this;
+        $new->attributes = $attributes;
         
         return $new;
     }

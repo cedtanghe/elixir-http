@@ -41,6 +41,12 @@ interface ServerRequestInterface extends PSRServerRequestInterface
     public function getPathInfo();
     
     /**
+     * @param array $attributes
+     * @return self
+     */
+    public function withAttributes(array $attributes);
+    
+    /**
      * @return self
      */
     public function withoutAttributes();
