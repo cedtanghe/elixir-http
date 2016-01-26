@@ -148,7 +148,7 @@ class Cookie
     }
 
     /**
-     * @param integer|string|\DateTime $value
+     * @param mixed $value
      */
     public function setExpires($value) 
     {
@@ -156,6 +156,10 @@ class Cookie
         {
             $value = $value->format('U');
         } 
+        else if (version_compare(phpversion(), '5.5', '>=') && $value instanceof \DateInterval)
+        {
+            $value = time() + $value->format('U');
+        }
         else if (!is_numeric($value))
         {
             $value = strtotime($value);
