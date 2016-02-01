@@ -16,13 +16,28 @@ class UploadedFileWithControls extends UploadedFile
     use FilterTrait;
     
     /**
+     * @var string
+     */
+    const FILE_NOT_UPLOADED = 'file_not_uploaded';
+
+    /**
+     * @var string
+     */
+    const UPLOAD_ERROR = 'upload_error';
+
+    /**
+     * @var integer
+     */
+    const IDENTITY_NOT_FOUND = 4;
+    
+    /**
      * {@inheritdoc}
      */
     public function getDefaultCatalogMessages()
     {
         return [
-            'file_not_uploaded' => I18N::__('The file is not uploaded.', ['context' => 'elixir']),
-            'upload_error' => I18N::__('An error occurred during upload.', ['context' => 'elixir'])
+            self::FILE_NOT_UPLOADED => I18N::__('The file is not uploaded.', ['context' => 'elixir']),
+            self::UPLOAD_ERROR => I18N::__('An error occurred during upload.', ['context' => 'elixir'])
         ];
     }
     
@@ -70,11 +85,11 @@ class UploadedFileWithControls extends UploadedFile
                 {
                     if ($this->file)
                     {
-                        $this->validationErrors = [$this->messagesCatalogue->get('file_not_uploaded')];
+                        $this->validationErrors = [$this->messagesCatalog->get(self::FILE_NOT_UPLOADED)];
                     }
                     else
                     {
-                        $this->validationErrors = [$this->messagesCatalogue->get('upload_error')];
+                        $this->validationErrors = [$this->messagesCatalog->get(self::UPLOAD_ERROR)];
                     }
                 }
                 break;
@@ -83,7 +98,7 @@ class UploadedFileWithControls extends UploadedFile
             case UPLOAD_ERR_PARTIAL:
             case UPLOAD_ERR_NO_FILE:
             default:
-                $this->validationErrors = [$this->messagesCatalogue->get('upload_error')];
+                $this->validationErrors = [$this->messagesCatalog->get(self::UPLOAD_ERROR)];
         }
         
         return $this->hasValidationError();
