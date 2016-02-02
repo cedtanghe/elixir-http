@@ -11,7 +11,6 @@ use Psr\Http\Message\UriInterface;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-
 class ResponseFactory
 {
     /**
@@ -23,9 +22,9 @@ class ResponseFactory
         $lastModified = $this->getHeaderLine('Last-Modified');
         $ifModifiedSince = $request->getHeaderLine('If-Modified-Since');
         
-        if(null !== $lastModified && null !== $ifModifiedSince)
+        if (null !== $lastModified && null !== $ifModifiedSince)
         {
-            if($lastModified === strtotime($ifModifiedSince))
+            if ($lastModified === strtotime($ifModifiedSince))
             {
                 return true;
             }
@@ -34,9 +33,9 @@ class ResponseFactory
         $etag = $this->getHeaderLine('Etag');
         $ifNoneMatch = $request->getHeaderLine('If-None-Match');
         
-        if(null !== $etag && null !== $ifNoneMatch)
+        if (null !== $etag && null !== $ifNoneMatch)
         {
-            if($etag === $ifNoneMatch)
+            if ($etag === $ifNoneMatch)
             {
                 return true;
             }
@@ -79,7 +78,7 @@ class ResponseFactory
         $lines = explode("\r\n", $string);
         $line = array_shift($lines);
         
-        if(!$line || !preg_match('/^(?P<protocol>HTTP\/1\.(0|1)) (?P<status>\d{3}).*$/', $line, $matches))
+        if (!$line || !preg_match('/^(?P<protocol>HTTP\/1\.(0|1)) (?P<status>\d{3}).*$/', $line, $matches))
         {
             throw new \InvalidArgumentException('Response text is not valid.');
         }
@@ -90,7 +89,7 @@ class ResponseFactory
         $content = [];
         $type = 'header';
         
-        while(count($lines) > 0)
+        while (count($lines) > 0)
         {
             $line = array_shift($lines);
             
