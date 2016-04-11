@@ -458,6 +458,11 @@ class URI implements UriInterface
      */
     public function isValidHost($host)
     {
+        if ('' !== preg_replace('/(?:^\[)?[a-zA-Z0-9-:\]_]+\.?/', '', $host))
+        {
+            return false;
+        }
+        
         return true;
     }
     

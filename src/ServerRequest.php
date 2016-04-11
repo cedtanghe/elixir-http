@@ -17,6 +17,16 @@ class ServerRequest extends Request implements ServerRequestInterface
     /**
      * @var array
      */
+    public static $trustedHosts = [];
+    
+    /**
+     * @var array
+     */
+    public static $trustedIPs = [];
+
+    /**
+     * @var array
+     */
     protected $serverParams = [];
     
     /**
@@ -594,16 +604,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getIP()
     {
-        $validateIP = function($ip)
-        {
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) 
-            {
-                return false;
-            }
-            
-            return true;
-        };
-        
         $keys = [
             'HTTP_CLIENT_IP',
             'HTTP_X_FORWARDED_FOR', 
@@ -623,7 +623,7 @@ class ServerRequest extends Request implements ServerRequestInterface
                 {
                     $ip = trim($ip);
                     
-                    if ($validateIP($ip))
+                    if ($this->isValidIP($ip))
                     {
                         return $ip;
                     }
@@ -631,7 +631,37 @@ class ServerRequest extends Request implements ServerRequestInterface
             }
         }
         
-        return $this->getServerParam('REMOTE_ADDR');
+        $ip = $this->getServerParam('REMOTE_ADDR');
+        
+        if ($this->isValidIP($ip))
+        {
+            return $ip;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * @return string|null
+     */
+    public function getHost()
+    {
+        if (!$host = $this->getServerParam('HOST'))
+        {
+            if (!$host = $this->getServerParam('SERVER_NAME'))
+            {
+                $host = $this->getServerParam('SERVER_ADDR', '');
+            }
+        }
+        
+        $host = strtolower(preg_replace('/:\d+$/', '', trim($host)));
+        
+        if ($this->isValidHost($host))
+        {
+            return $host;
+        }
+        
+        return null;
     }
     
     /**
@@ -711,6 +741,85 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function isValidParsedBody($data)
     {
+        return true;
+    }
+    
+    /**
+     * @param string $host
+     * @param boolean $whiteListed
+     * @return boolean
+     */
+    public function isValidHost($host, $whiteListed = true)
+    {
+        if ('' !== preg_replace('/(?:^\[)?[a-zA-Z0-9-:\]_]+\.?/', '', $host))
+        {
+            return false;
+        }
+        
+        if ($whiteListed && count(self::$trustedHosts) > 0)
+        {
+            foreach (self::$trustedHosts as $trusted) 
+            {
+                if (preg_match('/' . preg_quote($trusted, '/') . '/i', $host))
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * @param string $host
+     * @return boolean
+     */
+    public function isTrustedHost($host)
+    {
+        if (count(self::$trustedHosts) > 0)
+        {
+            foreach (self::$trustedHosts as $trusted) 
+            {
+                if (preg_match('/' . preg_quote($trusted, '/') . '/i', $host))
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * @param string $ip
+     * @param boolean $whiteListed
+     * @return boolean
+     */
+    public function isValidIP($ip, $whiteListed = true)
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) 
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * @param string $ip
+     * @return boolean
+     */
+    public function isTrustedIP($ip)
+    {
+        if (count(self::$trustedIPs) > 0)
+        {
+            return in_array($ip, self::$trustedIPs);
+        }
+
         return true;
     }
 }
