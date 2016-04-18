@@ -44,7 +44,7 @@ class UploadedFileWithControls extends UploadedFile
     /**
      * {@inheritdoc}
      */
-    public function validate()
+    public function validate($data = null)
     {
         if ($this->moved)
         {
@@ -107,7 +107,7 @@ class UploadedFileWithControls extends UploadedFile
     /**
      * {@inheritdoc}
      */
-    public function filter()
+    public function filter($data = null)
     {
         foreach ($this->filters as $config)
         {
