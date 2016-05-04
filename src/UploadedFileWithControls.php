@@ -2,15 +2,17 @@
 
 namespace Elixir\HTTP;
 
+use Elixir\Filter\FilterizableInterface;
 use Elixir\Filter\FilterTrait;
 use Elixir\STDLib\Facade\I18N;
 use Elixir\STDLib\MessagesCatalog;
+use Elixir\Validator\ValidatableInterface;
 use Elixir\Validator\ValidateTrait;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-class UploadedFileWithControls extends UploadedFile
+class UploadedFileWithControls extends UploadedFile implements ValidatableInterface, FilterizableInterface
 {
     use ValidateTrait;
     use FilterTrait;
@@ -44,7 +46,7 @@ class UploadedFileWithControls extends UploadedFile
     /**
      * {@inheritdoc}
      */
-    public function validate($data = null)
+    public function validate($data = null, array $options = [])
     {
         if ($this->moved)
         {
@@ -66,9 +68,9 @@ class UploadedFileWithControls extends UploadedFile
                     foreach ($this->validators as $config)
                     {
                         $validator = $config['validator'];
-                        $options = $config['options'];
+                        $o = $config['options'] + $options;
                         
-                        $valid = $validator->validate($this, $options);
+                        $valid = $validator->validate($this, $o);
                         
                         if (!$valid)
                         {
@@ -101,20 +103,20 @@ class UploadedFileWithControls extends UploadedFile
                 $this->validationErrors = [$this->messagesCatalog->get(self::UPLOAD_ERROR)];
         }
         
-        return $this->hasValidationError();
+        return $this->hasError();
     }
     
     /**
      * {@inheritdoc}
      */
-    public function filter($data = null)
+    public function filter($data = null, array $options = [])
     {
         foreach ($this->filters as $config)
         {
             $filter = $config['filter'];
-            $options = $config['options'];
-
-            $filter->filter($this, $options);
+            $o = $config['options'] + $options;
+            
+            $filter->filter($this, $o);
         }
         
         return true;
