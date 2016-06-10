@@ -7,6 +7,9 @@ use Elixir\HTTP\ServerRequestInterface;
 use Elixir\STDLib\ArrayUtils;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
+use function Elixir\STDLib\array_get;
+use function Elixir\STDLib\array_has;
+use function Elixir\STDLib\array_remove;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
@@ -195,7 +198,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function hasServerParam($key)
     {
-        return ArrayUtils::has($key, $this->serverParams);
+        return array_has($key, $this->serverParams);
     }
     
     /**
@@ -205,7 +208,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getServerParam($key, $default = null)
     {
-        return ArrayUtils::get($key, $this->serverParams, $default);
+        return array_get($key, $this->serverParams, $default);
     }
     
     /**
@@ -222,7 +225,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function hasCookieParam($key)
     {
-        return ArrayUtils::has($key, $this->cookieParams);
+        return array_has($key, $this->cookieParams);
     }
     
     /**
@@ -232,7 +235,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getCookieParam($key, $default = null)
     {
-        return ArrayUtils::get($key, $this->cookieParams, $default);
+        return array_get($key, $this->cookieParams, $default);
     }
     
     /**
@@ -260,7 +263,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function hasQueryParam($key)
     {
-        return ArrayUtils::has($key, $this->queryParams);
+        return array_has($key, $this->queryParams);
     }
     
     /**
@@ -270,7 +273,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getQueryParam($key, $default = null)
     {
-        return ArrayUtils::get($key, $this->queryParams, $default);
+        return array_get($key, $this->queryParams, $default);
     }
     
     /**
@@ -298,7 +301,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function hasUploadedFile($key)
     {
-        return ArrayUtils::has($key, $this->uploadedFiles);
+        return array_has($key, $this->uploadedFiles);
     }
     
     /**
@@ -307,7 +310,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getUploadedFile($key)
     {
-        return ArrayUtils::get($key, $this->queryParams, null);
+        return array_get($key, $this->queryParams, null);
     }
     
     /**
@@ -340,7 +343,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function hasPostParam($key)
     {
-        return ArrayUtils::has($key, $this->parsedBody ?: []);
+        return array_has($key, $this->parsedBody ?: []);
     }
     
     /**
@@ -350,7 +353,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getPostParam($key, $default = null)
     {
-        return ArrayUtils::get($key, $this->parsedBody ?: [], $default);
+        return array_get($key, $this->parsedBody ?: [], $default);
     }
     
     /**
@@ -383,7 +386,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function hasAttribute($key)
     {
-        return ArrayUtils::has($key, $this->attributes);
+        return array_has($key, $this->attributes);
     }
     
     /**
@@ -392,7 +395,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getAttribute($key, $default = null)
     {
-        return ArrayUtils::get($key, $this->attributes, $default);
+        return array_get($key, $this->attributes, $default);
     }
     
     /**
@@ -424,13 +427,12 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         $new = clone $this;
         
-        if (!ArrayUtils::has($key, $new->attributes)) 
+        if (!array_has($key, $new->attributes)) 
         {
             return $new;
         }
         
-        ArrayUtils::remove($key, $new->attributes);
-        
+        array_remove($key, $new->attributes);
         return $new;
     }
     

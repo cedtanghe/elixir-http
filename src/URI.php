@@ -2,8 +2,8 @@
 
 namespace Elixir\HTTP;
 
-use Elixir\STDLib\ArrayUtils;
 use Psr\Http\Message\UriInterface;
+use function Elixir\STDLib\array_get;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
@@ -20,9 +20,9 @@ class URI implements UriInterface
         $server = $server ?: $_SERVER;
         
         $URI = '';
-        $HTTPS = ArrayUtils::get('HTTPS', $server);
+        $HTTPS = array_get('HTTPS', $server);
 
-        if ($HTTPS && $HTTPS !== 'on' || ArrayUtils::get('HTTP_X_FORWARDED_PROTO', $server) === 'https')
+        if ($HTTPS && $HTTPS !== 'on' || array_get('HTTP_X_FORWARDED_PROTO', $server) === 'https')
         {
             $URI = 'https://';
         }
@@ -31,8 +31,8 @@ class URI implements UriInterface
             $URI = 'http://';
         }
         
-        $URI .= ArrayUtils::get('HTTP_HOST', $server, '');
-        $URI .= ArrayUtils::get('REQUEST_URI', $server, '');
+        $URI .= array_get('HTTP_HOST', $server, '');
+        $URI .= array_get('REQUEST_URI', $server, '');
         
         return new static($URI);
     }
