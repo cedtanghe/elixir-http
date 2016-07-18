@@ -109,6 +109,17 @@ class UploadedFileWithControls extends UploadedFile implements ValidatableInterf
     /**
      * {@inheritdoc}
      */
+    public function moveTo($targetPath)
+    {
+        $targetPath = $targetPath ?: $this->targetPath;
+        $this->filter();
+        
+        return parent::moveTo($targetPath);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
     public function filter($data = null, array $options = [])
     {
         foreach ($this->filters as $config)
