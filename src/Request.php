@@ -2,9 +2,6 @@
 
 namespace Elixir\HTTP;
 
-use Elixir\HTTP\MessageTrait;
-use Elixir\HTTP\StreamFactory;
-use Elixir\HTTP\URI;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
@@ -12,104 +9,93 @@ use Psr\Http\Message\UriInterface;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-
 class Request implements RequestInterface
 {
     use MessageTrait;
-    
+
     /**
      * @var UriInterface;
      */
     protected $URI;
-    
+
     /**
-     * @var string 
+     * @var string
      */
     protected $method = 'GET';
-    
+
     /**
      * @var string
      */
     protected $requestTarget;
-    
+
     /**
      * @param string|UriInterface|null $URI
-     * @param array $config
+     * @param array                    $config
+     *
      * @throws \InvalidArgumentException
      */
     public function __construct($URI = null, array $config = [])
     {
         // Method
-        if (!empty($config['method']))
-        {
-            if (!$this->isValidMethod($config['method']))
-            {
+        if (!empty($config['method'])) {
+            if (!$this->isValidMethod($config['method'])) {
                 throw new \InvalidArgumentException('Unsupported HTTP method.');
             }
 
             $this->method = $config['method'];
         }
-        
+
         // Body
-        if (isset($config['body']) && ($config['body'] instanceof StreamInterface))
-        {
+        if (isset($config['body']) && ($config['body'] instanceof StreamInterface)) {
             $this->body = $config['body'];
-        }
-        else
-        {
+        } else {
             $this->body = StreamFactory::create('php://temp', ['mode' => 'wb+']);
         }
-        
+
         // Headers
-        if (!empty($config['headers']))
-        {
+        if (!empty($config['headers'])) {
             $headers = [];
-            
-            foreach ($config['headers'] as $header => &$values)
-            {
+
+            foreach ($config['headers'] as $header => &$values) {
                 $name = $this->filterHeader($header);
-                
-                foreach ((array)$values as $value)
-                {
-                    if (!$this->isValidHeaderValue($value))
-                    {
+
+                foreach ((array) $values as $value) {
+                    if (!$this->isValidHeaderValue($value)) {
                         throw new \InvalidArgumentException(sprintf('Invalid header value for "%s".', $header));
                     }
-                    
+
                     $headers[$name][] = $value;
                 }
             }
-            
+
             $this->headers = $headers;
         }
-        
+
         // Protocol
-        if (!empty($config['protocol']))
-        {
+        if (!empty($config['protocol'])) {
             $this->protocol = $config['protocol'];
         }
-        
+
         // Request target
-        if (isset($config['request_target']))
-        {
+        if (isset($config['request_target'])) {
             $this->requestTarget = $config['request_target'];
         }
-        
+
         // URI
         $this->URI = $this->prepareURI();
     }
-    
+
     /**
      * @param string|UriInterface|null $URI
+     *
      * @return UriInterface
      */
     protected function prepareURI($URI = null)
     {
-        if (is_string($URI))
-        {
+        if (is_string($URI)) {
             $URI = new URI($URI);
         }
-        
+
         return $URI ?: new URI();
     }
 
@@ -118,22 +104,20 @@ class Request implements RequestInterface
      */
     public function getRequestTarget()
     {
-        if (null !== $this->requestTarget)
-        {
+        if (null !== $this->requestTarget) {
             return $this->requestTarget;
         }
-        
+
         $target = $this->URI->getPath();
         $query = $this->URI->getQuery();
-        
-        if ($query)
-        {
-            $target .= '?' . $query;
+
+        if ($query) {
+            $target .= '?'.$query;
         }
-        
+
         return empty($target) ? '/' : $target;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -141,10 +125,10 @@ class Request implements RequestInterface
     {
         $new = clone $this;
         $new->requestTarget = $requestTarget;
-        
+
         return $new;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -152,96 +136,96 @@ class Request implements RequestInterface
     {
         return $this->method;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function withMethod($method)
     {
-        if (!$this->isValidMethod($method))
-        {
+        if (!$this->isValidMethod($method)) {
             throw new \InvalidArgumentException('Unsupported HTTP method.');
         }
-        
+
         $new = clone $this;
         $new->method = $method;
-        
+
         return $new;
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isHead()
     {
         return $this->getMethod() === 'HEAD';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isGet()
     {
         return $this->getMethod() === 'GET';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isQuery()
     {
         $method = $this->getMethod();
+
         return $method === 'GET' || $method === 'HEAD';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isPost()
     {
         return $this->getMethod() === 'POST';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isPut()
     {
         return $this->getMethod() === 'PUT';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isDelete()
     {
         return $this->getMethod() === 'DELETE';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isConnect()
     {
         return $this->getMethod() === 'CONNECT';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isOptions()
     {
         return $this->getMethod() === 'OPTIONS';
     }
-    
+
     /**
-     * @return boolean 
+     * @return bool
      */
     public function isTrace()
     {
         return $this->getMethod() === 'TRACE';
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -249,7 +233,7 @@ class Request implements RequestInterface
     {
         return $this->URI;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -257,36 +241,35 @@ class Request implements RequestInterface
     {
         $new = clone $this;
         $new->URI = $URI;
-        
-        if (($preserveHost && $this->hasHeader('Host')) || !$URI->getHost())
-        {
+
+        if (($preserveHost && $this->hasHeader('Host')) || !$URI->getHost()) {
             return $new;
         }
-        
+
         $host = $URI->getHost();
         $port = $URI->getPort();
-        
-        if ($port) 
-        {
-            $host .= ':' . $port;
+
+        if ($port) {
+            $host .= ':'.$port;
         }
-        
+
         $new->headers['Host'] = [$host];
-        
+
         return $new;
     }
-    
+
     /**
      * @return string
      */
     public function getURL()
     {
-        return (string)$this->URI;
+        return (string) $this->URI;
     }
-    
+
     /**
      * @param string $method
-     * @return boolean
+     *
+     * @return bool
      */
     public function isValidMethod($method)
     {

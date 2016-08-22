@@ -16,7 +16,7 @@ class UploadedFileWithControls extends UploadedFile implements ValidatableInterf
 {
     use ValidateTrait;
     use FilterTrait;
-    
+
     /**
      * @var string
      */
@@ -28,10 +28,10 @@ class UploadedFileWithControls extends UploadedFile implements ValidatableInterf
     const UPLOAD_ERROR = 'upload_error';
 
     /**
-     * @var integer
+     * @var int
      */
     const IDENTITY_NOT_FOUND = 4;
-    
+
     /**
      * {@inheritdoc}
      */
@@ -39,58 +39,46 @@ class UploadedFileWithControls extends UploadedFile implements ValidatableInterf
     {
         return [
             self::FILE_NOT_UPLOADED => I18N::__('The file is not uploaded.', ['context' => 'elixir']),
-            self::UPLOAD_ERROR => I18N::__('An error occurred during upload.', ['context' => 'elixir'])
+            self::UPLOAD_ERROR => I18N::__('An error occurred during upload.', ['context' => 'elixir']),
         ];
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function validate($data = null, array $options = [])
     {
-        if ($this->moved)
-        {
+        if ($this->moved) {
             return true;
         }
-        
-        if (!$this->messagesCatalogue)
-        {
+
+        if (!$this->messagesCatalogue) {
             $this->setMessagesCatalog(MessagesCatalog::instance());
         }
-        
+
         $this->validationErrors = [];
-        
-        switch($this->error)
-        {
+
+        switch ($this->error) {
             case UPLOAD_ERR_OK:
-                if(($this->file && $this->isUploaded()) || $this->stream)
-                {
-                    foreach ($this->validators as $config)
-                    {
+                if (($this->file && $this->isUploaded()) || $this->stream) {
+                    foreach ($this->validators as $config) {
                         $validator = $config['validator'];
                         $o = $config['options'] + $options;
-                        
+
                         $valid = $validator->validate($this, $o);
-                        
-                        if (!$valid)
-                        {
+
+                        if (!$valid) {
                             $this->validationErrors = array_merge($this->validationErrors, $validator->getErrors());
-                            
-                            if ($this->breakChainValidationOnFailure)
-                            {
+
+                            if ($this->breakChainValidationOnFailure) {
                                 break;
                             }
                         }
                     }
-                }
-                else
-                {
-                    if ($this->file)
-                    {
+                } else {
+                    if ($this->file) {
                         $this->validationErrors = [$this->messagesCatalog->get(self::FILE_NOT_UPLOADED)];
-                    }
-                    else
-                    {
+                    } else {
                         $this->validationErrors = [$this->messagesCatalog->get(self::UPLOAD_ERROR)];
                     }
                 }
@@ -102,10 +90,10 @@ class UploadedFileWithControls extends UploadedFile implements ValidatableInterf
             default:
                 $this->validationErrors = [$this->messagesCatalog->get(self::UPLOAD_ERROR)];
         }
-        
+
         return $this->hasError();
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -113,23 +101,20 @@ class UploadedFileWithControls extends UploadedFile implements ValidatableInterf
     {
         $targetPath = $targetPath ?: $this->targetPath;
         $this->filter();
-        
+
         return parent::moveTo($targetPath);
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function filter($data = null, array $options = [])
     {
-        foreach ($this->filters as $config)
-        {
-            $filter = $config['filter'];
+        foreach ($this->filters as $config) {
             $o = $config['options'] + $options;
-            
-            $filter->filter($this, $o);
+            $config['filter']->filter($this, $o);
         }
-        
+
         return true;
     }
 }

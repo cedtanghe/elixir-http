@@ -8,26 +8,23 @@ use Psr\Http\Message\UploadedFileInterface;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-
 class UploadedFile implements UploadedFileInterface
 {
     /**
      * @param array $file
+     *
      * @return array|UploadedFileInterface|null
      */
     public static function create(array $file)
     {
-        if (empty($file))
-        {
+        if (empty($file)) {
             return null;
         }
-        
-        if (is_array($file['tmp_name']))
-        {
+
+        if (is_array($file['tmp_name'])) {
             $uploadedFiles = [];
-            
-            foreach (array_keys($file['tmp_name']) as $key)
-            {
+
+            foreach (array_keys($file['tmp_name']) as $key) {
                 $uploadedFiles[$key] = new static(
                     $file['tmp_name'][$key],
                     $file['size'][$key],
@@ -36,19 +33,16 @@ class UploadedFile implements UploadedFileInterface
                     $file['type'][$key]
                 );
             }
-            
+
             return $uploadedFiles;
         }
-        
-        if (trait_exists('\Elixir\Validator\ValidateTrait') && trait_exists('\Elixir\Filter\FilterTrait'))
-        {
+
+        if (trait_exists('\Elixir\Validator\ValidateTrait') && trait_exists('\Elixir\Filter\FilterTrait')) {
             $class = '\Elixir\HTTP\UploadedFileWithControls';
-        }
-        else
-        {
+        } else {
             $class = __CLASS__;
         }
-        
+
         return new $class(
             $file['tmp_name'],
             $file['size'],
@@ -57,119 +51,112 @@ class UploadedFile implements UploadedFileInterface
             $file['type']
         );
     }
-    
+
     /**
-     * @var null|StreamInterface; 
+     * @var null|StreamInterface;
      */
     protected $stream;
-    
+
     /**
-     * @var null|string; 
+     * @var null|string;
      */
     protected $file;
-    
+
     /**
      * @var int
      */
     protected $size;
-    
+
     /**
-     * @var int 
+     * @var int
      */
     protected $error;
-    
+
     /**
      * @var string|null
      */
     protected $clientFilename;
-    
+
     /**
      * @var string|null
      */
     protected $clientMediaType;
-    
+
     /**
-     * @var boolean 
+     * @var bool
      */
     protected $moved = false;
-    
+
     /**
-     * @var string 
+     * @var string
      */
     protected $targetPath = null;
 
     /**
      * @param string|resource|StreamInterface $streamOrFile
-     * @param int $size
-     * @param int $error
-     * @param string $clientFilename
-     * @param string $clientMediaType
+     * @param int                             $size
+     * @param int                             $error
+     * @param string                          $clientFilename
+     * @param string                          $clientMediaType
+     *
      * @throws \InvalidArgumentException
      */
     public function __construct($streamOrFile, $size, $error, $clientFilename = null, $clientMediaType = null)
     {
-        if ($error === UPLOAD_ERR_OK)
-        {
-            if (is_string($streamOrFile))
-            {
+        if ($error === UPLOAD_ERR_OK) {
+            if (is_string($streamOrFile)) {
                 $this->file = $streamOrFile;
-            }
-            else if (is_resource($streamOrFile))
-            {
+            } elseif (is_resource($streamOrFile)) {
                 $this->stream = StreamFactory::create($streamOrFile);
-            }
-            else
-            {
-                if (!$streamOrFile instanceof StreamInterface)
-                {
+            } else {
+                if (!$streamOrFile instanceof StreamInterface) {
                     throw new \InvalidArgumentException('Invalid stream or file.');
                 }
-                
+
                 $this->stream = $streamOrFile;
             }
         }
-        
+
         $this->size = $size;
         $this->error = $error;
         $this->clientFilename = $clientFilename;
         $this->clientMediaType = $clientMediaType;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function getStream()
     {
-        if ($this->error !== UPLOAD_ERR_OK) 
-        {
+        if ($this->error !== UPLOAD_ERR_OK) {
             throw new \RuntimeException('Cannot retrieve stream due to upload error.');
         }
-        
-        if ($this->moved)
-        {
+
+        if ($this->moved) {
             throw new \RuntimeException('Cannot retrieve stream after it has already been moved.');
         }
-        
+
         $this->stream = ($this->stream instanceof StreamInterface) ? $this->stream : StreamFactory::create($this->file);
+
         return $this->stream;
     }
-    
+
     /**
-     * @return boolean
+     * @return bool
      */
     public function isUploaded()
     {
         return is_uploaded_file($this->file);
     }
-    
+
     /**
-     * @return boolean
+     * @return bool
      */
     public function isMoved()
     {
         return $this->moved;
     }
-    
+
     /**
      * @return string
      */
@@ -177,7 +164,7 @@ class UploadedFile implements UploadedFileInterface
     {
         return $this->targetPath;
     }
-    
+
     /**
      * @param string $value
      */
@@ -192,49 +179,41 @@ class UploadedFile implements UploadedFileInterface
     public function moveTo($targetPath)
     {
         $targetPath = $targetPath ?: $this->targetPath;
-        
-        if (!$targetPath)
-        {
+
+        if (!$targetPath) {
             throw new \InvalidArgumentException('Path file is invalid.');
         }
-        
-        if ($this->error !== UPLOAD_ERR_OK)
-        {
+
+        if ($this->error !== UPLOAD_ERR_OK) {
             throw new \RuntimeException('Cannot move file due to upload error.');
         }
-        
-        if ($this->moved)
-        {
+
+        if ($this->moved) {
             throw new \RuntimeException('Cannot move file because the file is already moved.');
         }
-        
-        if (empty(PHP_SAPI) || 0 === strpos(PHP_SAPI, 'cli') || !$this->file)
-        {
+
+        if (empty(PHP_SAPI) || 0 === strpos(PHP_SAPI, 'cli') || !$this->file) {
             $handle = fopen($targetPath, 'wb+');
-            
-            if (false === $handle) 
-            {
+
+            if (false === $handle) {
                 throw new \RuntimeException('Error occurred while moving uploaded file.');
             }
-            
+
             $stream = $this->getStream();
             $stream->rewind();
-            
-            while (!$stream->eof())
-            {
+
+            while (!$stream->eof()) {
                 fwrite($handle, $stream->read(4096));
             }
-            
+
             fclose($handle);
-        }
-        else if (false === move_uploaded_file($this->file, $targetPath))
-        {
+        } elseif (false === move_uploaded_file($this->file, $targetPath)) {
             throw new \RuntimeException('Error occurred while moving uploaded file.');
         }
-        
+
         $this->moved = true;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -242,7 +221,7 @@ class UploadedFile implements UploadedFileInterface
     {
         return $this->size;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -250,7 +229,7 @@ class UploadedFile implements UploadedFileInterface
     {
         return $this->error;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -258,7 +237,7 @@ class UploadedFile implements UploadedFileInterface
     {
         return $this->clientFilename;
     }
-    
+
     /**
      * {@inheritdoc}
      */

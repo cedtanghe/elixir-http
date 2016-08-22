@@ -5,35 +5,33 @@ namespace Elixir\HTTP;
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-
-class Cookie 
+class Cookie
 {
     /**
      * @param string $value
+     *
      * @return Cookie
      */
     public static function fromString($value)
     {
         $segments = explode(';', $value);
         $part = explode('=', array_shift($segments));
-        
+
         $data = [
-            'name' => trim($part[0]), 
-            'value' => rawurldecode(trim($part[1])), 
-            'expires' => 0, 
-            'path' => '', 
-            'domain' => '', 
-            'secure' => false, 
-            'httponly' => false
+            'name' => trim($part[0]),
+            'value' => rawurldecode(trim($part[1])),
+            'expires' => 0,
+            'path' => '',
+            'domain' => '',
+            'secure' => false,
+            'httponly' => false,
         ];
-        
-        foreach ($segments as $segment)
-        {
+
+        foreach ($segments as $segment) {
             $part = explode('=', $segment);
             $key = trim(strtolower($part[0]));
-            
-            switch ($key)
-            {
+
+            switch ($key) {
                 case 'expires':
                     $date = \DateTime::createFromFormat('D, d-M-Y H:i:s \G\M\T', trim($part[1]), new \DateTimeZone('GMT'));
                     $data[$key] = false !== $date ? $date->getTimestamp() : 0;
@@ -48,7 +46,7 @@ class Cookie
                 break;
             }
         }
-        
+
         return new static(
             $data['name'],
             $data['value'],
@@ -59,52 +57,52 @@ class Cookie
             $data['httponly']
         );
     }
-    
+
     /**
-     * @var string 
+     * @var string
      */
     protected $name;
-    
+
     /**
-     * @var string|array 
+     * @var string|array
      */
     protected $value;
-    
+
     /**
-     * @var int 
+     * @var int
      */
     protected $expires;
-    
+
     /**
-     * @var string 
+     * @var string
      */
     protected $path;
-    
+
     /**
-     * @var string 
+     * @var string
      */
     protected $domain;
-    
+
     /**
-     * @var boolean 
+     * @var bool
      */
     protected $secure;
-    
+
     /**
-     * @var boolean 
+     * @var bool
      */
     protected $HTTPOnly;
-    
+
     /**
-     * @param string $name
-     * @param string|array $value
-     * @param integer|string|\DateTime $expires
-     * @param string $path
-     * @param string $domain
-     * @param boolean $secure
-     * @param boolean $HTTPOnly
+     * @param string               $name
+     * @param string|array         $value
+     * @param int|string|\DateTime $expires
+     * @param string               $path
+     * @param string               $domain
+     * @param bool                 $secure
+     * @param bool                 $HTTPOnly
      */
-    public function __construct($name, $value = '', $expires = 0, $path = '/', $domain = '', $secure = false, $HTTPOnly = false) 
+    public function __construct($name, $value = '', $expires = 0, $path = '/', $domain = '', $secure = false, $HTTPOnly = false)
     {
         $this->name = $name;
         $this->value = $value;
@@ -114,7 +112,7 @@ class Cookie
         $this->secure = $secure;
         $this->HTTPOnly = $HTTPOnly;
     }
-    
+
     /**
      * @return string
      */
@@ -150,23 +148,17 @@ class Cookie
     /**
      * @param mixed $value
      */
-    public function setExpires($value) 
+    public function setExpires($value)
     {
-        if ($value instanceof \DateTime) 
-        {
+        if ($value instanceof \DateTime) {
             $value = $value->format('U');
-        } 
-        else if (version_compare(phpversion(), '5.5', '>=') && $value instanceof \DateInterval)
-        {
+        } elseif (version_compare(phpversion(), '5.5', '>=') && $value instanceof \DateInterval) {
             $value = time() + $value->format('U');
-        }
-        else if (!is_numeric($value))
-        {
+        } elseif (!is_numeric($value)) {
             $value = strtotime($value);
         }
 
-        if (empty($value)) 
-        {
+        if (empty($value)) {
             $value = 0;
         }
 
@@ -184,10 +176,9 @@ class Cookie
     /**
      * @param string $value
      */
-    public function setPath($value) 
+    public function setPath($value)
     {
-        if (empty($value))
-        {
+        if (empty($value)) {
             $value = '/';
         }
 
@@ -197,7 +188,7 @@ class Cookie
     /**
      * @return string
      */
-    public function getDomain() 
+    public function getDomain()
     {
         return $this->domain;
     }
@@ -207,17 +198,14 @@ class Cookie
      */
     public function setDomain($value)
     {
-        if (!empty($value))
-        {
-            if (0 === strpos(strtolower($value), 'www.')) 
-            {
+        if (!empty($value)) {
+            if (0 === strpos(strtolower($value), 'www.')) {
                 $value = substr($value, 4);
             }
 
-            $value = '.' . $value;
+            $value = '.'.$value;
 
-            if (false !== ($port = strpos($value, ':')))
-            {
+            if (false !== ($port = strpos($value, ':'))) {
                 $value = substr($value, 0, $port);
             }
         }
@@ -226,15 +214,15 @@ class Cookie
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
-    public function isSecure() 
+    public function isSecure()
     {
         return $this->secure;
     }
 
     /**
-     * @param boolean $value
+     * @param bool $value
      */
     public function setSecure($value)
     {
@@ -242,21 +230,21 @@ class Cookie
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
-    public function isHTTPOnly() 
+    public function isHTTPOnly()
     {
         return $this->HTTPOnly;
     }
 
     /**
-     * @param boolean $value
+     * @param bool $value
      */
-    public function setHTTPOnly($value) 
+    public function setHTTPOnly($value)
     {
         $this->HTTPOnly = $value;
     }
-    
+
     /**
      * @return string|array
      */
@@ -265,57 +253,44 @@ class Cookie
         $name = rawurlencode($this->name);
         $cookies = [];
 
-        if (is_array($this->value))
-        {
-            foreach ($this->value as $key => $value)
-            {
-                $cookies[$name . '[' . $key . ']'] = rawurlencode($value);
+        if (is_array($this->value)) {
+            foreach ($this->value as $key => $value) {
+                $cookies[$name.'['.$key.']'] = rawurlencode($value);
             }
-        } 
-        else
-        {
+        } else {
             $cookies[$name] = rawurlencode($this->value);
         }
 
         $lines = [];
 
-        foreach ($cookies as $key => $value) 
-        {
-            $cookie = $key . '=';
+        foreach ($cookies as $key => $value) {
+            $cookie = $key.'=';
 
-            if ('' !== (string)$value) 
-            {
+            if ('' !== (string) $value) {
                 $cookie .= $value;
 
-                if ($this->expires != 0)
-                {
-                    $date = new \DateTime('@' . $this->expires, new \DateTimeZone('GMT'));
-                    $cookie .= '; expires=' . $date->format('D, d-M-Y H:i:s \G\M\T');
+                if ($this->expires != 0) {
+                    $date = new \DateTime('@'.$this->expires, new \DateTimeZone('GMT'));
+                    $cookie .= '; expires='.$date->format('D, d-M-Y H:i:s \G\M\T');
                 }
-            } 
-            else 
-            {
-                $date = new \DateTime('@' . (time() - 3600), new \DateTimeZone('GMT'));
-                $cookie .= 'null; expires=' . $date->format('D, d-M-Y H:i:s \G\M\T');
+            } else {
+                $date = new \DateTime('@'.(time() - 3600), new \DateTimeZone('GMT'));
+                $cookie .= 'null; expires='.$date->format('D, d-M-Y H:i:s \G\M\T');
             }
 
-            if (!empty($this->path))
-            {
-                $cookie .= '; path=' . $this->path;
+            if (!empty($this->path)) {
+                $cookie .= '; path='.$this->path;
             }
 
-            if (!empty($this->domain))
-            {
-                $cookie .= '; domain=' . $this->domain;
+            if (!empty($this->domain)) {
+                $cookie .= '; domain='.$this->domain;
             }
 
-            if ($this->secure) 
-            {
+            if ($this->secure) {
                 $cookie .= '; secure';
             }
 
-            if ($this->HTTPOnly) 
-            {
+            if ($this->HTTPOnly) {
                 $cookie .= '; httponly';
             }
 
@@ -324,36 +299,31 @@ class Cookie
 
         return count($lines) > 0 ? $lines[0] : $lines;
     }
-    
+
     /**
-     * @return boolean
+     * @return bool
      */
     public function send()
     {
-        if (is_array($this->value))
-        {
-            foreach ($this->value as $key => $value) 
-            {
-                if (true !== setcookie($this->name . '[' . $key . ']', (string)$value, $this->expires, $this->path, $this->domain, $this->secure, $this->HTTPOnly))
-                {
+        if (is_array($this->value)) {
+            foreach ($this->value as $key => $value) {
+                if (true !== setcookie($this->name.'['.$key.']', (string) $value, $this->expires, $this->path, $this->domain, $this->secure, $this->HTTPOnly)) {
                     return false;
                 }
             }
-        } 
-        else
-        {
+        } else {
             return setcookie($this->name, $this->value, $this->expires, $this->path, $this->domain, $this->secure, $this->HTTPOnly);
         }
     }
 
     /**
      * @ignore
+     *
      * @throws \RuntimeException
      */
     public function __toString()
     {
-        if (is_array($this->value)) 
-        {
+        if (is_array($this->value)) {
             throw new \RuntimeException('The cookie contains multiple values and therefore can not be made as a single string.');
         }
 

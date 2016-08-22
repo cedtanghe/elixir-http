@@ -2,35 +2,33 @@
 
 namespace Elixir\HTTP;
 
-use Elixir\HTTP\Cookie;
 use Psr\Http\Message\StreamInterface;
 
 /**
  * @author Cédric Tanghe <ced.tanghe@gmail.com>
  */
-
 trait MessageTrait
 {
     /**
-     * @var StreamInterface 
+     * @var StreamInterface
      */
     protected $body;
-    
+
     /**
      * @var array
      */
     protected $headers = [];
-    
+
     /**
-     * @var array 
+     * @var array
      */
     protected $cookies = [];
-    
+
     /**
      * @var string
      */
     protected $protocol = '1.1';
-    
+
     /**
      * {@inheritdoc}
      */
@@ -38,7 +36,7 @@ trait MessageTrait
     {
         return $this->protocol;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -46,10 +44,10 @@ trait MessageTrait
     {
         $new = clone $this;
         $new->protocol = $version;
-        
+
         return $new;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -57,40 +55,37 @@ trait MessageTrait
     {
         return $this->headers;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function hasHeader($name)
     {
         return array_key_exists(
-            strtolower($name), 
+            strtolower($name),
             array_map(
-                function($header)
-                {
+                function ($header) {
                     return strtolower($header);
                 },
                 array_keys($this->headers)
             )
         );
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function getHeader($name)
     {
-        foreach ($this->headers as $key => $value)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
-                return (array)$value;
+        foreach ($this->headers as $key => $value) {
+            if (strtolower($key) == strtolower($name)) {
+                return (array) $value;
             }
         }
-        
+
         return [];
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -98,149 +93,130 @@ trait MessageTrait
     {
         return implode(',', $this->getHeader($name));
     }
-    
+
     /**
      * @param Cookie|array $cookie
+     *
      * @return self
      */
     public function withCookies($cookie)
     {
         $lines = [];
-        
-        if (is_array($cookie))
-        {
-            foreach ($cookie as $c)
-            {
-                $lines = array_merge($lines, (array)$cookie->formatToString());
+
+        if (is_array($cookie)) {
+            foreach ($cookie as $c) {
+                $lines = array_merge($lines, (array) $cookie->formatToString());
             }
-        }
-        else
-        {
+        } else {
             $lines = $cookie->formatToString();
         }
-        
+
         return $this->withHeader('Set-Cookie', $lines);
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function withHeader($name, $value)
     {
-        if (!$this->isValidHeaderValue($value))
-        {
+        if (!$this->isValidHeaderValue($value)) {
             throw new \InvalidArgumentException(sprintf('Invalid header value for "%s".', $name));
         }
-        
+
         $new = clone $this;
-        
-        foreach ($new->headers as $key => $header)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
+
+        foreach ($new->headers as $key => $header) {
+            if (strtolower($key) == strtolower($name)) {
                 unset($new->headers[$key]);
             }
         }
-        
-        $new->headers[$name] = (array)$value;
-        
-        if (strtolower($name) == 'set-cookie')
-        {
+
+        $new->headers[$name] = (array) $value;
+
+        if (strtolower($name) == 'set-cookie') {
             $cookies = [];
-            
-            foreach((array)$value as $cookie)
-            {
+
+            foreach ((array) $value as $cookie) {
                 $cookies[] = Cookie::fromString($cookie);
             }
-            
+
             $new->cookies = $cookies;
         }
-        
+
         return $new;
     }
-    
+
     /**
      * @param Cookie|array $cookie
+     *
      * @return self
      */
     public function withAddedCookie($cookie)
     {
         $lines = [];
-        
-        if (is_array($cookie))
-        {
-            foreach ($cookie as $c)
-            {
-                $lines = array_merge($lines, (array)$cookie->formatToString());
+
+        if (is_array($cookie)) {
+            foreach ($cookie as $c) {
+                $lines = array_merge($lines, (array) $cookie->formatToString());
             }
-        }
-        else
-        {
+        } else {
             $lines = $cookie->formatToString();
         }
-        
+
         return $this->withAddedHeader('Set-Cookie', $lines);
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function withAddedHeader($name, $value)
     {
-        if (!$this->isValidHeaderValue($value))
-        {
+        if (!$this->isValidHeaderValue($value)) {
             throw new \InvalidArgumentException(sprintf('Invalid header value for "%s".', $name));
         }
-        
+
         $new = clone $this;
         $headers = [];
-        
-        foreach ($new->headers as $key => $header)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
+
+        foreach ($new->headers as $key => $header) {
+            if (strtolower($key) == strtolower($name)) {
                 $headers = array_merge($headers, $new->headers[$key]);
                 unset($new->headers[$key]);
             }
         }
-        
-        $new->headers[$name] = array_merge($headers, (array)$value);
-        
-        if (strtolower($name) == 'set-cookie')
-        {
-            foreach((array)$value as $cookie)
-            {
+
+        $new->headers[$name] = array_merge($headers, (array) $value);
+
+        if (strtolower($name) == 'set-cookie') {
+            foreach ((array) $value as $cookie) {
                 $new->cookies[] = Cookie::fromString($cookie);
             }
         }
-        
+
         return $new;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function withoutHeader($name)
     {
         $new = clone $this;
-        
-        foreach ($new->headers as $key => $value)
-        {
-            if (strtolower($key) == strtolower($name))
-            {
+
+        foreach ($new->headers as $key => $value) {
+            if (strtolower($key) == strtolower($name)) {
                 unset($new->headers[$key]);
                 break;
             }
         }
-        
-        if (strtolower($name) == 'set-cookie')
-        {
+
+        if (strtolower($name) == 'set-cookie') {
             $this->cookies = [];
         }
-        
+
         return $new;
     }
-    
+
     /**
      * @return array
      */
@@ -248,7 +224,7 @@ trait MessageTrait
     {
         return $this->cookies;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -256,43 +232,37 @@ trait MessageTrait
     {
         return $this->body;
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function withBody(StreamInterface $body)
     {
-        if (!$this->isValidBody($body))
-        {
+        if (!$this->isValidBody($body)) {
             throw new \InvalidArgumentException('Invalid stream.');
         }
-        
+
         $new = clone $this;
         $new->body = $body;
-        
+
         return $new;
     }
-    
+
     /**
      * @return array
      */
     protected function getCacheControl()
     {
-        if (!$this->hasHeader('Cache-Control') && !$this->hasHeader('Etag') && !$this->hasHeader('Last-Modified') && !$this->hasHeader('Expires'))
-        {
+        if (!$this->hasHeader('Cache-Control') && !$this->hasHeader('Etag') && !$this->hasHeader('Last-Modified') && !$this->hasHeader('Expires')) {
             return ['no-cache'];
-        }
-        else if (!$this->hasHeader('Cache-Control'))
-        {
+        } elseif (!$this->hasHeader('Cache-Control')) {
             return ['private, must-revalidate'];
         }
-        
+
         $cacheControl = [];
 
-        foreach ($this->headers as $key => $value)
-        {
-            if (strtolower($key) == 'cache-control')
-            {
+        foreach ($this->headers as $key => $value) {
+            if (strtolower($key) == 'cache-control') {
                 $cacheControl = $this->headers[$key];
                 break;
             }
@@ -301,10 +271,8 @@ trait MessageTrait
         ksort($cacheControl);
         $private = true;
 
-        foreach ($cacheControl as $value)
-        {
-            if (false !== strpos($value, 'public') || false !== strpos($value, 'private') || false !== strpos($value, 's-maxage'))
-            {
+        foreach ($cacheControl as $value) {
+            if (false !== strpos($value, 'public') || false !== strpos($value, 'private') || false !== strpos($value, 's-maxage')) {
                 $private = false;
                 break;
             }
@@ -312,48 +280,46 @@ trait MessageTrait
 
         $line = implode(', ', $cacheControl);
 
-        if ($private)
-        {
+        if ($private) {
             $line .= ', private';
         }
 
         return [$line];
     }
-    
+
     /**
      * @param string $header
-     * string type
+     *                       string type
      */
     protected function filterHeader($header)
     {
         return str_replace(' ', '-', ucwords(str_replace('-', ' ', $header)));
     }
-    
+
     /**
      * @param string $value
-     * @return boolean
+     *
+     * @return bool
      */
     public function isValidHeaderValue($value)
     {
-        if (is_array($value))
-        {
-            foreach ($value as $v)
-            {
-                if (!is_string($v))
-                {
+        if (is_array($value)) {
+            foreach ($value as $v) {
+                if (!is_string($v)) {
                     return false;
                 }
             }
-            
+
             return true;
         }
-        
+
         return is_string($value);
     }
-    
+
     /**
      * @param StreamInterface $body
-     * @return boolean
+     *
+     * @return bool
      */
     public function isValidBody(StreamInterface $body)
     {
