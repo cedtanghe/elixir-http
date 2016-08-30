@@ -107,9 +107,5 @@
         "psr-4": {
             "Elixir\\Test\\HTTP\\": "tests/"
         }
-    },
-    "suggest": {
-        "elixir/elixir-validator": "If you add controls to the file download",
-        "elixir/elixir-filter": "If you add controls to the file download"
     }
 }

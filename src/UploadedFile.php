@@ -20,7 +20,7 @@ class UploadedFile implements UploadedFileInterface
         if (empty($file)) {
             return null;
         }
-
+        
         if (is_array($file['tmp_name'])) {
             $uploadedFiles = [];
 
@@ -36,14 +36,8 @@ class UploadedFile implements UploadedFileInterface
 
             return $uploadedFiles;
         }
-
-        if (trait_exists('\Elixir\Validator\ValidateTrait') && trait_exists('\Elixir\Filter\FilterTrait')) {
-            $class = '\Elixir\HTTP\UploadedFileWithControls';
-        } else {
-            $class = __CLASS__;
-        }
-
-        return new $class(
+        
+        return new static(
             $file['tmp_name'],
             $file['size'],
             $file['error'],
