@@ -166,7 +166,6 @@ class ResponseFactory
      */
     public static function createJSON($data, $status = 200, $encodingOptions = 0, array $config = [])
     {
-        json_encode(null);
         $JSON = json_encode($data, $encodingOptions);
 
         $config['content'] = $JSON;
@@ -175,7 +174,23 @@ class ResponseFactory
 
         return static::create($config);
     }
+    
+    /**
+     * @param string $JSON
+     * @param int   $status
+     * @param array $config
+     *
+     * @return ResponseInterface
+     */
+    public static function createJSONFromString($JSON, $status = 200, array $config = [])
+    {
+        $config['content'] = $JSON;
+        $config['status_code'] = $status;
+        $config['headers']['content-type'] = ['application/json'];
 
+        return static::create($config);
+    }
+    
     /**
      * @param string|UriInterface $URI
      * @param int                 $status

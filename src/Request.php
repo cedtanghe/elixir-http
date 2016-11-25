@@ -82,7 +82,7 @@ class Request implements RequestInterface
         }
 
         // URI
-        $this->URI = $this->prepareURI();
+        $this->URI = $this->prepareURI($URI);
     }
 
     /**
